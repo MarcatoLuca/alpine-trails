@@ -4,6 +4,7 @@ import 'package:flutter_application/widgets/carousel.dart';
 import 'package:flutter_application/widgets/helloworld.dart';
 import 'package:flutter_application/widgets/navbar.dart';
 import 'package:flutter_application/constants.dart' as constants;
+import 'package:flutter_application/widgets/useravatarmenu.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,27 +33,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
-        child: Column(
+        child: Stack(
           children: [
-            Container(
-              alignment: Alignment.centerRight,
-              height: 48,
-              margin: EdgeInsets.only(top: 24),
-              child: SizedBox(
-                height: 56,
-                width: 56,
-                child: CircleAvatar(
-                  child: IconButton(onPressed: () {}, icon: Icon(Icons.person)),
-                ),
-              ),
-            ),
-
             Column(
               spacing: 32,
               children: [
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 40),
+                    padding: const EdgeInsets.only(top: 96),
                     child: Column(
                       spacing: 8,
                       children: [
@@ -101,6 +89,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Carousel(images: constants.homeCarouselImages),
               ],
             ),
+            UserAvatarMenuWidget(),
           ],
         ),
       ),
