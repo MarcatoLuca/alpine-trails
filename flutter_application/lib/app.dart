@@ -16,7 +16,7 @@ class App extends StatelessWidget {
       routerDelegate: AppRouterDelegate(
         notifier: Provider.of<PageNotifier>(context),
       ),
-      title: 'Navigator 2.0',
+      title: 'Alpine Trails',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.brown,
