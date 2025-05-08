@@ -1,4 +1,4 @@
-CREATE TABLE map_markers (
+CREATE TABLE mapmarker (
     id INT IDENTITY(1,1) PRIMARY KEY, -- O SERIAL per PostgreSQL, o INTEGER PRIMARY KEY AUTOINCREMENT per SQLite
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100),
@@ -10,7 +10,7 @@ CREATE TABLE map_markers (
 -- Popolamento della tabella map_markers
 
 -- Vette Iconiche e Punti Panoramici
-INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
+INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 ('Tre Cime di Lavaredo', 'Vetta Iconica/Punto Panoramico', 46.617500, 12.303000, 'Cima Grande - per riferimento della vetta'),
 ('Rifugio Auronzo', 'Vetta Iconica/Punto Panoramico', 46.613500, 12.295500, 'Accesso Tre Cime'),
 ('Rifugio Locatelli', 'Vetta Iconica/Punto Panoramico', 46.619000, 12.315000, 'Vista Tre Cime lato nord'),
@@ -37,7 +37,7 @@ INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
 ('Piz de Sieles', 'Vetta Iconica/Punto Panoramico', 46.606300, 11.778100, 'Odle, vicino Seceda');
 
 -- Laghi Suggestivi
-INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
+INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 ('Lago di Braies', 'Lago Suggestivo', 46.698500, 12.085500, NULL),
 ('Lago di Sorapis', 'Lago Suggestivo', 46.514000, 12.216000, NULL),
 ('Lago di Misurina', 'Lago Suggestivo', 46.582000, 12.255000, NULL),
@@ -50,7 +50,7 @@ INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
 ('Lago di Limides', 'Lago Suggestivo', 46.520000, 12.018000, 'Vicino Passo Falzarego');
 
 -- Passi Alpini Importanti
-INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
+INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 ('Passo Pordoi', 'Passo Alpino', 46.487800, 11.811500, NULL),
 ('Passo Sella', 'Passo Alpino', 46.509000, 11.757000, NULL),
 ('Passo Gardena', 'Passo Alpino', 46.549000, 11.809000, NULL),
@@ -64,7 +64,7 @@ INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
 ('Forcella Staunies', 'Passo Alpino', 46.577500, 12.151300, 'Cristallo - arrivo vecchia cabinovia');
 
 -- Rifugi Noti
-INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
+INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 ('Rifugio Lagazuoi', 'Rifugio Noto', 46.527500, 12.008800, NULL),
 ('Rifugio Nuvolau', 'Rifugio Noto', 46.491800, 12.049500, 'Vista spettacolare'),
 ('Rifugio Gardeccia', 'Rifugio Noto', 46.439000, 11.673000, 'Catinaccio'),
@@ -77,7 +77,7 @@ INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
 ('Rifugio Alpe di Tires / Tierser Alpl', 'Rifugio Noto', 46.483000, 11.650000, NULL);
 
 -- Cittadine e Località Principali
-INSERT INTO map_markers (name, type, latitude, longitude, description) VALUES
+INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 ('Cortina d''Ampezzo', 'Cittadina/Località', 46.537600, 12.135700, 'Centro'), -- Nota: ' in d''Ampezzo è stato escapato
 ('Ortisei / St. Ulrich', 'Cittadina/Località', 46.574000, 11.673000, 'Val Gardena'),
 ('Selva di Val Gardena / Wolkenstein', 'Cittadina/Località', 46.555000, 11.760000, NULL),
