@@ -73,6 +73,11 @@ flutter:
     - images/home-carousel-3.png
     - images/home-carousel-4.png
     - images/home-carousel-5.png
+    - images/mountain-icon.png
+    - images/drop-icon.png
+    - images/map-icon.png
+    - images/flag-icon.png
+    - images/house-icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

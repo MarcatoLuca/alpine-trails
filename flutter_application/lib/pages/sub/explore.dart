@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application/widgets/smallcard.dart';
+import 'package:flutter_application/models/mapmarkers.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_application/constants.dart' as constants;
 
 class Explore extends StatefulWidget {
   const Explore({super.key});
@@ -9,106 +13,106 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  List<String> entries = <String>[
-    'Entry A',
-    'Entry B',
-    'Entry C',
-    'Entry A',
-    'Entry B',
-    'Entry C',
-    'Entry A',
-    'Entry B',
-    'Entry C',
-    'Entry A',
-    'Entry B',
-    'Entry C',
-    'Entry A',
-    'Entry B',
-  ];
-  List<String> filterEntries = [
-    'Entry A',
-    'Entry B',
-    'Entry C',
-    'Entry A',
-    'Entry B',
-    'Entry C',
-    'Entry A',
-    'Entry B',
-    'Entry C',
-    'Entry A',
-    'Entry B',
-    'Entry C',
-    'Entry A',
-    'Entry B',
-  ];
-  final int fixedItems = 1;
+  List<MapMarker> mapMarkers = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      body: ListView.builder(
-        padding: EdgeInsets.only(bottom: 16, top: 24),
-        itemCount: filterEntries.length + fixedItems,
-        itemBuilder: (BuildContext context, int index) {
-          if (index == 0) {
-            return Column(
-              children: [
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.all(8),
-                  child: IconButton(
-                    icon: Icon(Icons.arrow_back),
-                    color: Colors.white,
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
+      body: Column(
+        spacing: 32,
+        children: [
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.all(8),
+            child: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
 
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    bottom: 24,
-                    top: 16,
-                  ),
-                  child: SearchBar(
-                    leading: Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: const Icon(Icons.search),
+          Text(
+            'Discover the Dolomite Wonders',
+            style: Theme.of(context).textTheme.displaySmall,
+            textAlign: TextAlign.center,
+          ),
+
+          Padding(
+            padding: const EdgeInsets.only(left: 24, right: 24, top: 16),
+            child: SearchBar(
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Icon(
+                  Icons.search,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              onTap: () {},
+              onChanged: (value) {},
+              onSubmitted: (value) {},
+            ),
+          ),
+
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+              child: Card(
+                clipBehavior: Clip.hardEdge,
+                child: SizedBox(
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(46.433334, 11.850000),
+                      initialZoom: 10,
                     ),
-                    onTap: () {},
-                    onChanged: (value) {
-                      setState(() {
-                        filterEntries =
-                            entries
-                                .where((entry) => entry.startsWith(value))
-                                .toList();
-                      });
-                    },
-                    onSubmitted: (value) {
-                      setState(() {
-                        filterEntries =
-                            entries.where((entry) => entry == value).toList();
-                      });
-                    },
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.app',
+                      ),
+                      MarkerLayer(
+                        markers:
+                            mapMarkers.map((marker) {
+                              return Marker(
+                                point: LatLng(
+                                  marker.latitude,
+                                  marker.longitude,
+                                ),
+                                width: 40,
+                                height: 40,
+                                child: Image(
+                                  image: AssetImage(
+                                    constants.markerType2IconData[marker.type]!,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                      RichAttributionWidget(
+                        attributions: [
+                          // Suggested attribution for the OpenStreetMap public tile server
+                          TextSourceAttribution(
+                            'OpenStreetMap contributors',
+                            onTap:
+                                () => launchUrl(
+                                  Uri.parse(
+                                    'https://openstreetmap.org/copyright',
+                                  ),
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            );
-          }
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-              child: SmallCardWidget(
-                id: filterEntries[index - fixedItems],
-                text: filterEntries[index - fixedItems],
-                backgroundImage: 'images/home-carousel-1.png',
               ),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

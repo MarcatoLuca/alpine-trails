@@ -89,6 +89,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Carousel(images: constants.homeCarouselImages),
               ],
             ),
+
+            // Alwasy last Stack widget
             UserAvatarMenuWidget(),
           ],
         ),

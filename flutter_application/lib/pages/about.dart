@@ -255,6 +255,20 @@ class AboutPage extends StatelessWidget {
                         ),
                       ],
                     ),
+                    RichAttributionWidget(
+                      attributions: [
+                        // Suggested attribution for the OpenStreetMap public tile server
+                        TextSourceAttribution(
+                          'OpenStreetMap contributors',
+                          onTap:
+                              () => launchUrl(
+                                Uri.parse(
+                                  'https://openstreetmap.org/copyright',
+                                ),
+                              ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

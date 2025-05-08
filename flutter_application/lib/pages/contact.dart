@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/widgets/useravatarmenu.dart';
 
 import '../widgets/navbar.dart';
 
@@ -8,18 +9,19 @@ class ContactPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            margin: EdgeInsets.only(
-              left: 16.0,
-              right: 16.0,
-              top: MediaQuery.of(context).size.height * 0.15,
-              bottom: 20.0,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
+        child: Stack(
+          children: [
+            Column(spacing: 32, children: [
+              
+              ],
             ),
-            child: Image.asset("images/lake.jpg", fit: BoxFit.cover),
-          ),
-        ],
+
+            // Alwasy last Stack widget
+            UserAvatarMenuWidget(),
+          ],
+        ),
       ),
       bottomNavigationBar: NavBar(index: 1),
     );

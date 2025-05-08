@@ -33,3 +33,11 @@ const List<CarouselImageInfo> homeCarouselImages = [
     subtitle: 'Enjoy the serene winter landscapes',
   ),
 ];
+
+const markerType2IconData = <String, String>{
+  'Vetta Iconica/Punto Panoramico': 'images/mountain-icon.png',
+  'Passo Alpino': 'images/map-icon.png',
+  'Lago Suggestivo': 'images/drop-icon.png',
+  'Rifugio Noto': 'images/flag-icon.png',
+  'Cittadina/Località': 'images/house-icon.png',
+};

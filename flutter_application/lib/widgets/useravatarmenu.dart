@@ -20,7 +20,7 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    animation = Tween<double>(begin: 70, end: 140).animate(controller)
+    animation = Tween<double>(begin: 0.2, end: 1).animate(controller)
       ..addListener(() {
         setState(() {
           // The state that has changed here is the animation object's value.
@@ -38,6 +38,7 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
+    final double menuButtonWidth = width * 0.3;
 
     void toogleMenu() {
       setState(() {
@@ -67,7 +68,7 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
                   spacing: 24,
                   children: [
                     SizedBox(
-                      width: width * 0.3,
+                      width: menuButtonWidth,
                       height: 48,
                       child: TextButton(
                         child: Text(
@@ -83,7 +84,7 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
                       ),
                     ),
                     SizedBox(
-                      width: width * 0.3,
+                      width: menuButtonWidth,
                       height: 48,
                       child: TextButton(
                         child: Text(
@@ -99,7 +100,7 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
                       ),
                     ),
                     SizedBox(
-                      width: width * 0.3,
+                      width: menuButtonWidth,
                       height: 48,
                       child: TextButton(
                         child: Text(
@@ -117,10 +118,13 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
                   ],
                 ),
                 Positioned(
-                  bottom: animation.value,
-                  child: IconButton(
-                    onPressed: () => toogleMenu(),
-                    icon: Icon(Icons.cancel, size: 48),
+                  bottom: 150,
+                  child: Transform.scale(
+                    scale: animation.value,
+                    child: IconButton(
+                      onPressed: () => toogleMenu(),
+                      icon: Icon(Icons.cancel, size: 48),
+                    ),
                   ),
                 ),
               ],
