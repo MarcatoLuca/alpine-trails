@@ -1,8 +1,23 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from app.database import create_db_and_tables, get_session
+
+from app.map_marker import router as map_marker_router
 
 import uvicorn
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("App is starting up...")
+
+    create_db_and_tables()
+
+    yield
+
+    print("App is shutting down...")
 
 
 app = FastAPI(
@@ -10,6 +25,8 @@ app = FastAPI(
     description="Alpine Trails - Dolomites",
     version="1.0.0",
 )
+
+app.include_router(map_marker_router.router, tags=["Map Marker"])
 
 
 @app.get("/helloworld")
