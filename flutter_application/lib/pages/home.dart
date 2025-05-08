@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Route _createRoute() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const Explore(),
+      pageBuilder: (context, animation, secondaryAnimation) => Explore(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final Animation<double> curvedAnimation = CurvedAnimation(
           parent: animation,
