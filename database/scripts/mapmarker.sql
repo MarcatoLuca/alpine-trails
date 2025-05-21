@@ -1,15 +1,17 @@
+IF OBJECT_ID('dbo.mapmarker', 'U') IS NOT NULL DROP TABLE dbo.mapmarker;
+
 CREATE TABLE mapmarker (
-    id INT IDENTITY(1,1) PRIMARY KEY, -- O SERIAL per PostgreSQL, o INTEGER PRIMARY KEY AUTOINCREMENT per SQLite
+    id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100),
-    latitude DECIMAL(10, 6) NOT NULL,  -- Aumentata precisione per sicurezza
-    longitude DECIMAL(10, 6) NOT NULL, -- Aumentata precisione per sicurezza
-    description TEXT
+    latitude DECIMAL(10, 6) NOT NULL,
+    longitude DECIMAL(10, 6) NOT NULL,
+    description VARCHAR(MAX) -- TEXT è deprecato, usare VARCHAR(MAX)
 );
+GO
 
--- Popolamento della tabella map_markers
-
--- Vette Iconiche e Punti Panoramici
+-- Popolamento della tabella map_markers (usando i dati che hai fornito)
+-- Questa sezione è la stessa che hai fornito e che funziona correttamente
 INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 ('Tre Cime di Lavaredo', 'Vetta Iconica/Punto Panoramico', 46.617500, 12.303000, 'Cima Grande - per riferimento della vetta'),
 ('Rifugio Auronzo', 'Vetta Iconica/Punto Panoramico', 46.613500, 12.295500, 'Accesso Tre Cime'),
@@ -31,7 +33,7 @@ INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 ('Cima della Vezzana', 'Vetta Iconica/Punto Panoramico', 46.299500, 11.822400, 'Pale di San Martino'),
 ('Piz La Ila', 'Vetta Iconica/Punto Panoramico', 46.555000, 11.898000, 'Corvara, Val Badia'),
 ('Sass de Putia / Peitlerkofel', 'Vetta Iconica/Punto Panoramico', 46.655000, 11.825000, 'Vetta isolata'),
-('Croda Rossa d''Ampezzo', 'Vetta Iconica/Punto Panoramico', 46.631700, 12.133300, 'Vetta'), -- Nota: ' in d''Ampezzo è stato escapato
+('Croda Rossa d''Ampezzo', 'Vetta Iconica/Punto Panoramico', 46.631700, 12.133300, 'Vetta'),
 ('Cinque Torri', 'Vetta Iconica/Punto Panoramico', 46.509000, 12.049000, 'Area'),
 ('Monte Rite', 'Vetta Iconica/Punto Panoramico', 46.360000, 12.230000, 'Messner Mountain Museum Dolomites'),
 ('Piz de Sieles', 'Vetta Iconica/Punto Panoramico', 46.606300, 11.778100, 'Odle, vicino Seceda');
@@ -78,7 +80,7 @@ INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 
 -- Cittadine e Località Principali
 INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
-('Cortina d''Ampezzo', 'Cittadina/Località', 46.537600, 12.135700, 'Centro'), -- Nota: ' in d''Ampezzo è stato escapato
+('Cortina d''Ampezzo', 'Cittadina/Località', 46.537600, 12.135700, 'Centro'),
 ('Ortisei / St. Ulrich', 'Cittadina/Località', 46.574000, 11.673000, 'Val Gardena'),
 ('Selva di Val Gardena / Wolkenstein', 'Cittadina/Località', 46.555000, 11.760000, NULL),
 ('Corvara in Badia', 'Cittadina/Località', 46.549000, 11.875000, NULL),
@@ -86,3 +88,4 @@ INSERT INTO mapmarker (name, type, latitude, longitude, description) VALUES
 ('Arabba', 'Cittadina/Località', 46.497000, 11.875000, NULL),
 ('San Martino di Castrozza', 'Cittadina/Località', 46.262000, 11.800000, NULL),
 ('Alleghe', 'Cittadina/Località', 46.407000, 12.019000, 'Lago di Alleghe');
+GO
