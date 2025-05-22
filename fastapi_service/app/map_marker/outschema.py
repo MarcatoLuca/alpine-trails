@@ -3,10 +3,10 @@ from app.map_marker.models import MapMarkerPublic
 
 
 class MapMarkerOut(BaseModel):
-    name: str | None = Field(default=None, max_length=255, nullable=False)
-    type: str | None = Field(default=None, max_length=100, nullable=False)
-    latitude: float | None = Field(default=None, nullable=False)
-    longitude: float | None = Field(default=None, nullable=False)
+    name: str
+    type: str | None = Field(default=None, max_length=100, nullable=True)
+    latitude: float
+    longitude: float
     description: str | None = Field(default=None, nullable=True)
 
     @classmethod
