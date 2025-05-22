@@ -63,5 +63,8 @@ INSERT INTO activities (name) VALUES
 ('Trekking Alta Quota'),
 ('Cime'), -- Probabilmente salita a cime/vette
 ('Corsi Parapendio'),
+('Sci Alpinismo'),
+('Escursioni Naturalistiche'),
+('Noleggio E-Bike'),
 ('Noleggio MTB');
 GO
