@@ -1,5 +1,4 @@
 from fastapi import Depends, HTTPException, APIRouter, Response
-from fastapi.responses import JSONResponse
 import logging
 from sqlmodel import Session, select
 from app.database import get_session
@@ -18,7 +17,7 @@ def get_all_map_markers(session: SessionDep) -> list[MapMarkerOut]:
         map_markers = session.exec(select(MapMarker)).all()
 
         if not map_markers:
-            return JSONResponse(content={})
+            return []
 
         return [
             MapMarkerOut.create_from_sql_model_map_marker(map_marker)
