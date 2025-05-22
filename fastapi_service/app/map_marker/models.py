@@ -2,14 +2,16 @@ from sqlmodel import Field, SQLModel
 
 
 class MapMarkerBase(SQLModel):
-    name: str | None = Field(default=None, max_length=150, nullable=False)
+    name: str | None = Field(default=None, max_length=255, nullable=False)
     type: str | None = Field(default=None, max_length=100, nullable=False)
     latitude: float | None = Field(default=None, nullable=False)
     longitude: float | None = Field(default=None, nullable=False)
-    description: str | None = Field(default=None, max_length=500, nullable=True)
+    description: str | None = Field(default=None, nullable=True)
 
 
 class MapMarker(MapMarkerBase, table=True):
+    __tablename__="mapmarker"
+
     id: int | None = Field(default=None, primary_key=True)
 
 

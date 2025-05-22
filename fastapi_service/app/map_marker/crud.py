@@ -2,7 +2,7 @@ from fastapi import Depends, APIRouter
 from typing import Annotated
 import logging
 from sqlmodel import Session, select
-from app.database import engine, get_session
+from app.database import get_session
 from app.map_marker.models import MapMarkerPublic, MapMarker
 
 router = APIRouter()

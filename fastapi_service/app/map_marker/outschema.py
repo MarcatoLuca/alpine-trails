@@ -3,11 +3,11 @@ from app.map_marker.models import MapMarkerPublic
 
 
 class MapMarkerOut(BaseModel):
-    name: str | None = Field(default=None, max_length=150, nullable=False)
+    name: str | None = Field(default=None, max_length=255, nullable=False)
     type: str | None = Field(default=None, max_length=100, nullable=False)
     latitude: float | None = Field(default=None, nullable=False)
     longitude: float | None = Field(default=None, nullable=False)
-    description: str | None = Field(default=None, max_length=500, nullable=True)
+    description: str | None = Field(default=None, nullable=True)
 
     @classmethod
     def create_from_sql_model_map_marker(cls, sql_model: MapMarkerPublic):
