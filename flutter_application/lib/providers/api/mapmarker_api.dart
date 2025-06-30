@@ -5,13 +5,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MapMarkerApi {
   final String baseUrl = dotenv.env['BASE_URL'] ?? 'default_url';
+  final client = http.Client();
 
   Future<List<MapMarker>> getMapMarkerAll() async {
-    var client = http.Client();
     var uri = Uri.parse('$baseUrl/map_markers/all');
     var response = await client.get(uri);
     if (response.statusCode == 200) {
-      return mapMarkerFromJson(
+      return MapMarker.listMapMarkerFromJson(
         const Utf8Decoder().convert(response.bodyBytes),
       );
     }

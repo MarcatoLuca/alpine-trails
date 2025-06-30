@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/models/mapmarkers.dart';
-import 'package:flutter_application/services/domain/mapmarker_service.dart';
+import 'package:flutter_application/services/domain/mapmarker.service.dart';
 import 'package:flutter_application/widgets/exploremap.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';

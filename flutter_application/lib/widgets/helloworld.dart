@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/models/helloworld.dart';
-import 'package:flutter_application/services/domain/helloworld_service.dart';
+import 'package:flutter_application/services/domain/helloworld.service.dart';
 
 class HelloWorldWidget extends StatefulWidget {
   const HelloWorldWidget({super.key});

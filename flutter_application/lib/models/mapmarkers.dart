@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-List<MapMarker> mapMarkerFromJson(String str) => List<MapMarker>.from(json.decode(str).map((x) => MapMarker.fromJson(x)));
-
 class MapMarker {
   final String name;
   final String type;
@@ -36,4 +34,7 @@ class MapMarker {
       'description': description,
     };
   }
+
+  static List<MapMarker> listMapMarkerFromJson(String str) =>
+      List<MapMarker>.from(json.decode(str).map((x) => MapMarker.fromJson(x)));
 }

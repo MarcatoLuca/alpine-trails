@@ -4,7 +4,7 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 class EmailService {
   final String? alpineEmail = dotenv.env['EMAIL_RECIPIENT'];
 
-  sendEmail(String subject, String body, [String? emailTo]) async {
+  sendEmail(String subject, String body, {String? emailTo}) async {
 
     final Email email = Email(
       isHTML: false,

@@ -176,7 +176,7 @@ class AboutPage extends StatelessWidget {
                                   emailService.sendEmail(
                                     emailSubject,
                                     emailBody,
-                                    'support@alpinetrails.com',
+                                    emailTo: 'support@alpinetrails.com',
                                   );
                                 },
                         ),
