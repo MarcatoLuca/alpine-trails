@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/models/activity.dart';
 import 'package:flutter_application/models/operator.dart';
 import 'package:flutter_application/services/domain/operator.service.dart';
 import 'package:flutter_application/widgets/bigcard.dart';
@@ -18,18 +19,23 @@ class ContactPage extends StatefulWidget {
 class _ContactPageState extends State<ContactPage> {
   final Logger logger = Logger();
   final _operatorService = OperatorService();
-  late final ScrollController _controller;
+  late final ScrollController _singleChildScrollViewController;
+  late final ScrollController _listViewController;
+  final _overlayController = OverlayPortalController();
+  Set<String> filters = <String>{};
 
   @override
   void initState() {
-    _controller = ScrollController();
+    _singleChildScrollViewController = ScrollController();
+    _listViewController = ScrollController();
 
     super.initState();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _singleChildScrollViewController.dispose();
+    _listViewController.dispose();
 
     super.dispose();
   }
@@ -42,43 +48,153 @@ class _ContactPageState extends State<ContactPage> {
           StickyWidget(
             initialPosition: StickyPosition(top: 20, right: 20),
             finalPosition: StickyPosition(top: 20, right: 20),
-            controller: _controller,
+            controller: _singleChildScrollViewController,
             child: UserAvatarMenuWidget(),
           ),
         ],
         child: SingleChildScrollView(
-          controller: _controller,
+          controller: _singleChildScrollViewController,
           padding: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
           child: Stack(
             children: [
-              Column(
-                spacing: 32,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 96),
-                    child: FutureBuilder(
-                      future: _operatorService.getOperatorAll(),
-                      builder: (
-                        BuildContext context,
-                        AsyncSnapshot<List<Operator>> snapshot,
-                      ) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return SizedBox(
-                            height: MediaQuery.of(context).size.height - 200,
-                            child: const Center(
-                              child: CircularProgressIndicator(),
+              Padding(
+                padding: const EdgeInsets.only(top: 96),
+                child: FutureBuilder(
+                  future: _operatorService.getOperatorAll(),
+                  builder: (
+                    BuildContext context,
+                    AsyncSnapshot<List<Operator>> snapshot,
+                  ) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return SizedBox(
+                        height: MediaQuery.of(context).size.height - 200,
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    } else if (snapshot.hasError) {
+                      logger.e('Error loading map markers: ${snapshot.error}');
+                      return const Center(child: Text('Error loading data'));
+                    } else if (snapshot.hasData) {
+                      return Column(
+                        children: [
+                          SizedBox(
+                            height: 80.0,
+                            child: StickyContainer(
+                              stickyChildren: [
+                                StickyWidget(
+                                  initialPosition: StickyPosition(
+                                    top: 22,
+                                    right: 0,
+                                  ),
+                                  finalPosition: StickyPosition(
+                                    top: 22,
+                                    right: 0,
+                                  ),
+                                  controller: _listViewController,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        side: BorderSide(
+                                          color: Theme.of(context).primaryColor,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    onPressed: _overlayController.toggle,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.filter_alt),
+                                        OverlayPortal(
+                                          controller: _overlayController,
+                                          overlayChildBuilder: (BuildContext context) {
+                                            return Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 128),
+                                              child: Card(
+                                                child: SingleChildScrollView(
+                                                  child: Column(
+                                                    children: [
+                                                      Text(
+                                                        'Filter by activity',
+                                                        style: Theme.of(context).textTheme.headlineSmall,
+                                                      ),
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: Wrap(
+                                                          spacing: 8.0,
+                                                          runSpacing: 8.0,
+                                                          children: snapshot.data!
+                                                              .expand((op) => op.activities ?? const <Activity>[])
+                                                              .map((activity) => FilterChip(
+                                                                    label: Text(activity.name),
+                                                                    selected: filters.contains(activity.name),
+                                                                    onSelected: (bool selected) {
+                                                                      setState(() {
+                                                                        if (selected) {
+                                                                          filters.add(activity.name);
+                                                                        } else {
+                                                                          filters.remove(activity.name);
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                  ))
+                                                              .toList(),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 48.0),
+                                child: ListView(
+                                  controller: _listViewController,
+                                  scrollDirection: Axis.horizontal,
+                                  children:
+                                      snapshot.data!
+                                          .expand(
+                                            (op) =>
+                                                op.activities ??
+                                                const <Activity>[],
+                                          )
+                                          .map((activity) => activity.name)
+                                          .toSet()
+                                          .map((activity) {
+                                            return Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 3.0,
+                                              ),
+                                              child: FilterChip(
+                                                label: Text(activity),
+                                                selected: filters.contains(
+                                                  activity,
+                                                ),
+                                                onSelected: (bool selected) {
+                                                  setState(() {
+                                                    if (selected) {
+                                                      filters.add(activity);
+                                                    } else {
+                                                      filters.remove(activity);
+                                                    }
+                                                  });
+                                                },
+                                              ),
+                                            );
+                                          })
+                                          .toList(),
+                                ),
+                              ),
                             ),
-                          );
-                        } else if (snapshot.hasError) {
-                          logger.e(
-                            'Error loading map markers: ${snapshot.error}',
-                          );
-                          return const Center(
-                            child: Text('Error loading data'),
-                          );
-                        } else if (snapshot.hasData) {
-                          return Column(
+                          ),
+                          Column(
                             spacing: 16,
                             children:
                                 snapshot.data!
@@ -94,16 +210,14 @@ class _ContactPageState extends State<ContactPage> {
                                       ),
                                     )
                                     .toList(),
-                          );
-                        }
-                        return const Center(child: Text('No data available.'));
-                      },
-                    ),
-                  ),
-                ],
+                          ),
+                        ],
+                      );
+                    }
+                    return const Center(child: Text('No data available.'));
+                  },
+                ),
               ),
-
-              // Alwasy last Stack widget
             ],
           ),
         ),
