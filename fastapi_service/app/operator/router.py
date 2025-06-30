@@ -45,7 +45,7 @@ def get_all_operator(session: SessionDep) -> list[OperatorOut]:
         logging.exception(f"Exception occurred in getting operators: {e}")
 
 
-@router.get("/operator/${operator_id}", response_model=OperatorOut)
+@router.get("/operator/{operator_id}", response_model=OperatorOut)
 def get_operator_by_id(operator_id: int, session: SessionDep) -> OperatorOut:
     try:
         statement = (
