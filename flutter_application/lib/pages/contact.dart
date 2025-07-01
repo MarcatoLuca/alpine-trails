@@ -3,6 +3,7 @@ import 'package:flutter_application/models/activity.dart';
 import 'package:flutter_application/models/operator.dart';
 import 'package:flutter_application/services/domain/operator.service.dart';
 import 'package:flutter_application/widgets/bigcard.dart';
+import 'package:flutter_application/widgets/filtercard.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_sticky_widgets/flutter_sticky_widgets.dart';
 import 'package:flutter_application/widgets/useravatarmenu.dart';
@@ -23,6 +24,12 @@ class _ContactPageState extends State<ContactPage> {
   late final ScrollController _listViewController;
   final _overlayController = OverlayPortalController();
   Set<String> filters = <String>{};
+  List<String> selectedFilters = <String>[];
+
+  void onConfirmFilters() {
+
+    _overlayController.hide();
+  }
 
   @override
   void initState() {
@@ -82,73 +89,73 @@ class _ContactPageState extends State<ContactPage> {
                               stickyChildren: [
                                 StickyWidget(
                                   initialPosition: StickyPosition(
-                                    top: 22,
+                                    top: 23,
                                     right: 0,
                                   ),
                                   finalPosition: StickyPosition(
-                                    top: 22,
+                                    top: 23,
                                     right: 0,
                                   ),
                                   controller: _listViewController,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        side: BorderSide(
-                                          color: Theme.of(context).primaryColor,
-                                          width: 2,
+                                  child: SizedBox(
+                                    width: 40,
+                                    height: 35,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.all(0.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          side: BorderSide(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            width: 2,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    onPressed: _overlayController.toggle,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.filter_alt),
-                                        OverlayPortal(
-                                          controller: _overlayController,
-                                          overlayChildBuilder: (BuildContext context) {
-                                            return Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 128),
-                                              child: Card(
-                                                child: SingleChildScrollView(
-                                                  child: Column(
-                                                    children: [
-                                                      Text(
-                                                        'Filter by activity',
-                                                        style: Theme.of(context).textTheme.headlineSmall,
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(8.0),
-                                                        child: Wrap(
-                                                          spacing: 8.0,
-                                                          runSpacing: 8.0,
-                                                          children: snapshot.data!
-                                                              .expand((op) => op.activities ?? const <Activity>[])
-                                                              .map((activity) => FilterChip(
-                                                                    label: Text(activity.name),
-                                                                    selected: filters.contains(activity.name),
-                                                                    onSelected: (bool selected) {
-                                                                      setState(() {
-                                                                        if (selected) {
-                                                                          filters.add(activity.name);
-                                                                        } else {
-                                                                          filters.remove(activity.name);
-                                                                        }
-                                                                      });
-                                                                    },
-                                                                  ))
-                                                              .toList(),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                      onPressed: _overlayController.toggle,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.filter_alt),
+                                          OverlayPortal(
+                                            controller: _overlayController,
+                                            overlayChildBuilder: (
+                                              BuildContext context,
+                                            ) {
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 24.0,
+                                                      vertical: 128,
+                                                    ),
+
+                                                child: FilterCard(
+                                                  filterValues:
+                                                      snapshot.data!
+                                                          .expand(
+                                                            (op) =>
+                                                                op.activities ??
+                                                                const <
+                                                                  Activity
+                                                                >[],
+                                                          )
+                                                          .map(
+                                                            (activity) =>
+                                                                activity.name,
+                                                          )
+                                                          .toSet()
+                                                          .toList(),
+                                                  filters: selectedFilters,
+                                                  onConfirm: onConfirmFilters,
+                                                  onCancel: () => _overlayController.hide(),
                                                 ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ],
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -169,9 +176,10 @@ class _ContactPageState extends State<ContactPage> {
                                           .toSet()
                                           .map((activity) {
                                             return Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 3.0,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 3.0,
+                                                  ),
                                               child: FilterChip(
                                                 label: Text(activity),
                                                 selected: filters.contains(
