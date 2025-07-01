@@ -20,7 +20,7 @@ const typography = TextTheme(
   labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
   labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
   labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.normal),
-  bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-  bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
-  bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+  bodyLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+  bodyMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+  bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
 );

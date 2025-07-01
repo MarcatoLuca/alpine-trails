@@ -159,7 +159,7 @@ class BigCardWidget extends StatelessWidget {
                             'Activities:',
                             style: Theme.of(
                               context,
-                            ).textTheme.bodyLarge!.copyWith(
+                            ).textTheme.bodyMedium!.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
