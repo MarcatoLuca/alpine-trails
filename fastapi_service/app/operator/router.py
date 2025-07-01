@@ -5,48 +5,68 @@ from sqlmodel import Session, select
 from app.database import get_session
 from typing import Annotated, List
 from sqlalchemy.orm import selectinload
+from fastapi import Query
 
 from app.operator.outschema import OperatorOut
 from app.operator.models import Operator
+from app.activity.models import Activity
+from app.zone.models import Zone
 
 router = APIRouter()
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-@router.get("/operator/all", response_model=List[OperatorOut])
-def get_all_operator(session: SessionDep) -> list[OperatorOut]:
+@router.get("/operator/", response_model=List[OperatorOut])
+def get_all_operator(
+    session: SessionDep,
+    name: str | None = Query(default=None),
+    zone_name: str | None = Query(default=None),
+    activity_names: List[str] | None = Query(
+        default=None,
+    ),
+    skip: int = Query(
+        default=0,
+        ge=0,
+    ),
+    limit: int = Query(
+        default=100,
+        ge=1,
+        le=200,
+    ),
+) -> list[OperatorOut]:
 
     try:
         statement = select(Operator).options(
             selectinload(Operator.activities), selectinload(Operator.zones)
         )
-        operators = session.exec(statement).all()
 
-        if not operators:
-            return []
-
-        operators_out = []
-        for op in operators:
-            operators_out.append(
-                OperatorOut.create_operator_with_activities_and_zones(
-                    operator=op,
-                    activities=op.activities,  # Relazione caricata
-                    zones=op.zones,  # Relazione caricata
-                )
+        # Applica filtri
+        if name:
+            statement = statement.where(Operator.name.ilike(f"%{name}%"))
+        if zone_name:
+            statement = statement.where(Operator.zones.any(Zone.name == zone_name))
+        if activity_names:
+            statement = statement.where(
+                Operator.activities.any(Activity.name.in_(activity_names))
             )
-        return operators_out
 
-    except HTTPException as http_exception:
-        return Response(
-            content=http_exception.detail, status_code=http_exception.status_code
-        )
+        statement = statement.order_by(Operator.id)
+
+        statement = statement.offset(skip).limit(limit)
+
+        operators = session.exec(statement).all()
+        return operators
 
     except Exception as e:
-        logging.exception(f"Exception occurred in getting operators: {e}")
+        logging.exception(f"Exception occurred in getting all operators: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @router.get("/operator/{operator_id}", response_model=OperatorOut)
-def get_operator_by_id(operator_id: int, session: SessionDep) -> OperatorOut:
+def get_operator_by_id(
+    operator_id: int,
+    session: SessionDep,
+) -> OperatorOut:
     try:
         statement = (
             select(Operator)
@@ -57,16 +77,14 @@ def get_operator_by_id(operator_id: int, session: SessionDep) -> OperatorOut:
         operator = session.exec(statement).first()
 
         if not operator:
-            return JSONResponse(content={})
+            raise HTTPException(
+                status_code=404, detail=f"Operator with id {operator_id} not found"
+            )
 
         return operator
 
-    except HTTPException as http_exception:
-        return Response(
-            content=http_exception.detail, status_code=http_exception.status_code
-        )
-
     except Exception as e:
         logging.exception(
-            f"Exception occurred in getting operator with id ${operator_id}: {e}"
+            f"Exception occurred in getting operator with id {operator_id}: {e}"
         )
+        raise HTTPException(status_code=500, detail="Internal Server Error")
