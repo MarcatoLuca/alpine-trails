@@ -38,7 +38,7 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
-    final double menuButtonWidth = width * 0.3;
+    final double menuButtonWidth = width * 0.4;
 
     void toogleMenu() {
       setState(() {
