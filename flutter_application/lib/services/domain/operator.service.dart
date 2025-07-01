@@ -8,6 +8,33 @@ class OperatorService {
     return _api.getOperatorAll();
   }
 
+  Future<List<Operator>> getOperatorFiltered({String? name, String? zoneName, List<String>? activities}) {
+    String queryString = '';
+
+    if(name != null && name.isNotEmpty) {
+      queryString += 'name=$name';
+    }
+    if(zoneName != null && zoneName.isNotEmpty) {
+      if(queryString.isNotEmpty) {
+        queryString += '&';
+      }
+      queryString += 'zone_name=$zoneName';
+    }
+    if(activities != null && activities.isNotEmpty) {
+      if(queryString.isNotEmpty) {
+        queryString += '&';
+      }
+      queryString += activities.map((activity) => 'activity_names=$activity').join('&');
+    }
+
+    print('Query String: $queryString');
+
+    if(queryString.isEmpty) {
+      return _api.getOperatorAll();
+    }
+    return _api.getOperatorFiltered(queryString);
+  }
+
   Future<Operator?> getOperatorById(int id) {
     return _api.getOperatorById(id);
   }

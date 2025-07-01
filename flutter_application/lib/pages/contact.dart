@@ -23,10 +23,11 @@ class _ContactPageState extends State<ContactPage> {
   late final ScrollController _singleChildScrollViewController;
   late final ScrollController _listViewController;
   final _overlayController = OverlayPortalController();
-  Set<String> filters = <String>{};
   List<String> selectedFilters = <String>[];
 
   void onConfirmFilters() {
+
+    setState(() {});
 
     _overlayController.hide();
   }
@@ -67,7 +68,7 @@ class _ContactPageState extends State<ContactPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 96),
                 child: FutureBuilder(
-                  future: _operatorService.getOperatorAll(),
+                  future: _operatorService.getOperatorFiltered(activities: selectedFilters),
                   builder: (
                     BuildContext context,
                     AsyncSnapshot<List<Operator>> snapshot,
@@ -182,15 +183,15 @@ class _ContactPageState extends State<ContactPage> {
                                                   ),
                                               child: FilterChip(
                                                 label: Text(activity),
-                                                selected: filters.contains(
+                                                selected: selectedFilters.contains(
                                                   activity,
                                                 ),
                                                 onSelected: (bool selected) {
                                                   setState(() {
                                                     if (selected) {
-                                                      filters.add(activity);
+                                                      selectedFilters.add(activity);
                                                     } else {
-                                                      filters.remove(activity);
+                                                      selectedFilters.remove(activity);
                                                     }
                                                   });
                                                 },

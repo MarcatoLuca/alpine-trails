@@ -9,7 +9,18 @@ class OperatorApi {
   final client = http.Client();
 
   Future<List<Operator>> getOperatorAll() async {
-    var uri = Uri.parse('$baseUrl/operator/all');
+    var uri = Uri.parse('$baseUrl/operator/');
+    var response = await client.get(uri);
+    if (response.statusCode == 200) {
+      return Operator.listOperatorFromJson(
+        const Utf8Decoder().convert(response.bodyBytes),
+      );
+    }
+    return [];
+  }
+
+  Future<List<Operator>> getOperatorFiltered(String queryString) async {
+    var uri = Uri.parse('$baseUrl/operator?$queryString');
     var response = await client.get(uri);
     if (response.statusCode == 200) {
       return Operator.listOperatorFromJson(
