@@ -1,10 +1,12 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
 from app.operator.models import OperatorPublicWithAttributes
 from app.activity.models import ActivityPublic
 from app.zone.models import ZonePublic
 
 class OperatorOut(BaseModel):
+    id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=255)
     description: str | None = Field(default=None, nullable=True)
     phone: str | None = Field(default=None, nullable=True)
@@ -15,4 +17,4 @@ class OperatorOut(BaseModel):
 
     @classmethod
     def create_operator_with_activities_and_zones(cls, operator: OperatorPublicWithAttributes, activities: list[ActivityPublic], zones: list[ZonePublic]):
-        return cls(name=operator.name, description=operator.description, phone=operator.phone, email=operator.email, website=operator.website, activities=activities, zones=zones)
+        return cls(id=operator.id,name=operator.name, description=operator.description, phone=operator.phone, email=operator.email, website=operator.website, activities=activities, zones=zones)
