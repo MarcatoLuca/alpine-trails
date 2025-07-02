@@ -10,6 +10,7 @@ class BigCardWidget extends StatelessWidget {
   BigCardWidget({
     super.key,
     required this.title,
+    required this.onClick,
     this.subtitle,
     this.phone,
     this.email,
@@ -19,6 +20,7 @@ class BigCardWidget extends StatelessWidget {
   });
 
   final String title;
+  final Function onClick;
   final String? subtitle;
   final String? phone;
   final String? email;
@@ -285,7 +287,7 @@ class BigCardWidget extends StatelessWidget {
               SizedBox(
                 width: width,
                 child: FilledButton.icon(
-                  onPressed: () {},
+                  onPressed: () => onClick(),
                   label: const Text('Get more information'),
                   icon: const Icon(Icons.info),
                   style: FilledButton.styleFrom(

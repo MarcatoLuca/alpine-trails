@@ -45,7 +45,7 @@ class _FilterCardState extends State<FilterCard> {
         stickyChildren: [
           StickyWidget(
             initialPosition: StickyPosition(left: width / 2 - 80, bottom: 20),
-            finalPosition: StickyPosition(left: 20, bottom: 20),
+            finalPosition: StickyPosition(left: width / 2 - 80, bottom: 20),
             controller: _controller,
             child: FilledButton(
               onPressed: widget.onConfirm,

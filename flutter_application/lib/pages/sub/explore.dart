@@ -120,7 +120,7 @@ class _ExploreState extends State<Explore> {
         children: [
           Container(
             alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
             child: IconButton(
               icon: Icon(
                 Icons.arrow_back,

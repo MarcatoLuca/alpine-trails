@@ -27,8 +27,6 @@ class OperatorService {
       queryString += activities.map((activity) => 'activity_names=$activity').join('&');
     }
 
-    print('Query String: $queryString');
-
     if(queryString.isEmpty) {
       return _api.getOperatorAll();
     }

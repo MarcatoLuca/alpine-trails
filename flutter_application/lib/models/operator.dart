@@ -4,6 +4,7 @@ import 'package:flutter_application/models/activity.dart';
 import 'package:flutter_application/models/zone.dart';
 
 class Operator {
+  int id;
   String name;
   String? description;
   String? phone;
@@ -13,6 +14,7 @@ class Operator {
   List<Zone>? zones;
 
   Operator({
+    required this.id,
     required this.name,
     this.description,
     this.phone,
@@ -24,6 +26,7 @@ class Operator {
 
   factory Operator.fromJson(Map<String, dynamic> json) {
     return Operator(
+      id: json['id'] as int,
       name: json['name'] as String,
       description: json['description'] as String?,
       phone: json['phone'] as String?,
@@ -39,6 +42,7 @@ class Operator {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'description': description,
       'phone': phone,

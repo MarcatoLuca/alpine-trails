@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/models/activity.dart';
 import 'package:flutter_application/models/operator.dart';
+import 'package:flutter_application/pages/sub/operator.dart';
 import 'package:flutter_application/services/domain/operator.service.dart';
 import 'package:flutter_application/widgets/bigcard.dart';
 import 'package:flutter_application/widgets/filtercard.dart';
@@ -25,11 +26,25 @@ class _ContactPageState extends State<ContactPage> {
   final _overlayController = OverlayPortalController();
   List<String> selectedFilters = <String>[];
 
-  void onConfirmFilters() {
+  void _onConfirmFilters() {
 
     setState(() {});
 
     _overlayController.hide();
+  }
+
+    Route _createRoute(int operatorId) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => OperatorDetails(id: operatorId),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final Animation<double> curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.fastEaseInToSlowEaseOut,
+        );
+
+        return ScaleTransition(scale: curvedAnimation, child: child);
+      },
+    );
   }
 
   @override
@@ -149,7 +164,7 @@ class _ContactPageState extends State<ContactPage> {
                                                           .toSet()
                                                           .toList(),
                                                   filters: selectedFilters,
-                                                  onConfirm: onConfirmFilters,
+                                                  onConfirm: _onConfirmFilters,
                                                   onCancel: () => _overlayController.hide(),
                                                 ),
                                               );
@@ -210,6 +225,7 @@ class _ContactPageState extends State<ContactPage> {
                                     .map(
                                       (op) => BigCardWidget(
                                         title: op.name,
+                                        onClick: () => Navigator.of(context).push(_createRoute(op.id)),
                                         subtitle: op.description,
                                         phone: op.phone,
                                         email: op.email,
