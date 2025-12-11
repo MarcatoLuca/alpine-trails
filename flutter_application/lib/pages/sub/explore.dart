@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/models/mapmarkers.dart';
 import 'package:flutter_application/services/domain/mapmarker.service.dart';
-import 'package:flutter_application/widgets/exploremap.dart';
+import 'package:flutter_application/widgets/home/exploremap.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -132,10 +132,13 @@ class _ExploreState extends State<Explore> {
             ),
           ),
 
-          Text(
-            'Discover the Dolomite Wonders',
-            style: Theme.of(context).textTheme.displaySmall,
-            textAlign: TextAlign.center,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              'Discover the Dolomite Wonders',
+              style: Theme.of(context).textTheme.displaySmall,
+              textAlign: TextAlign.center,
+            ),
           ),
 
           Padding(

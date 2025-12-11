@@ -3,8 +3,8 @@ import 'package:flutter_application/models/activity.dart';
 import 'package:flutter_application/models/operator.dart';
 import 'package:flutter_application/pages/sub/operator.dart';
 import 'package:flutter_application/services/domain/operator.service.dart';
-import 'package:flutter_application/widgets/bigcard.dart';
-import 'package:flutter_application/widgets/filtercard.dart';
+import 'package:flutter_application/widgets/contact/generaloperatorcard.dart';
+import 'package:flutter_application/widgets/contact/filtercard.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_sticky_widgets/flutter_sticky_widgets.dart';
 import 'package:flutter_application/widgets/useravatarmenu.dart';
@@ -223,7 +223,7 @@ class _ContactPageState extends State<ContactPage> {
                             children:
                                 snapshot.data!
                                     .map(
-                                      (op) => BigCardWidget(
+                                      (op) => GeneralOperatorCardWidget(
                                         title: op.name,
                                         onClick: () => Navigator.of(context).push(_createRoute(op.id)),
                                         subtitle: op.description,

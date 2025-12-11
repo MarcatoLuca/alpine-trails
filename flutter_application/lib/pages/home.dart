@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/pages/sub/explore.dart';
-import 'package:flutter_application/widgets/carousel.dart';
+import 'package:flutter_application/widgets/home/carousel.dart';
 import 'package:flutter_application/widgets/navbar.dart';
 import 'package:flutter_application/constants.dart' as constants;
 import 'package:flutter_application/widgets/useravatarmenu.dart';

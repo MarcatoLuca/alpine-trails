@@ -6,8 +6,8 @@ import 'package:flutter_application/services/email_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
 
-class BigCardWidget extends StatelessWidget {
-  BigCardWidget({
+class GeneralOperatorCardWidget extends StatelessWidget {
+  GeneralOperatorCardWidget({
     super.key,
     required this.title,
     required this.onClick,
@@ -288,7 +288,12 @@ class BigCardWidget extends StatelessWidget {
                 width: width,
                 child: FilledButton.icon(
                   onPressed: () => onClick(),
-                  label: const Text('Get more information'),
+                  label: Text(
+                    'Get more information',
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
                   icon: const Icon(Icons.info),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
