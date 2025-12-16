@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/interfaces/carousel_image_info.dart';
+import 'package:flutter_application/interfaces/payloads/contract_payload.dart';
 import 'package:flutter_application/providers/pagenotifier.dart';
 import 'package:provider/provider.dart';
 
@@ -30,7 +31,13 @@ class _CarouselState extends State<Carousel> {
       constraints: BoxConstraints(maxHeight: height / 3, minWidth: width),
       child: CarouselView.weighted(
         onTap: (int imageIndex) {
-          notifier.changePage(page: widget.images[imageIndex].page, unknown: false);
+          notifier.changePage(
+            page: widget.images[imageIndex].page,
+            unknown: false,
+            payload: ContractPayload(
+              filters: widget.images[imageIndex].filters,
+            ),
+          );
         },
         controller: controller,
         itemSnapping: true,
@@ -51,7 +58,6 @@ class HeroLayoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final double width = MediaQuery.sizeOf(context).width;
 
     return Stack(

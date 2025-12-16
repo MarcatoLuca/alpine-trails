@@ -290,9 +290,9 @@ class GeneralOperatorCardWidget extends StatelessWidget {
                   onPressed: () => onClick(),
                   label: Text(
                     'Get more information',
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      color: Colors.white,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall!.copyWith(color: Colors.white),
                   ),
                   icon: const Icon(Icons.info),
                   style: FilledButton.styleFrom(

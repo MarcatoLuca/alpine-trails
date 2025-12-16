@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/interfaces/payloads/contract_payload.dart';
 import 'package:flutter_application/models/activity.dart';
 import 'package:flutter_application/models/operator.dart';
 import 'package:flutter_application/pages/sub/operator.dart';
+import 'package:flutter_application/providers/pagenotifier.dart';
 import 'package:flutter_application/services/domain/operator.service.dart';
 import 'package:flutter_application/widgets/contact/generaloperatorcard.dart';
 import 'package:flutter_application/widgets/contact/filtercard.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_sticky_widgets/flutter_sticky_widgets.dart';
 import 'package:flutter_application/widgets/useravatarmenu.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/navbar.dart';
 
@@ -24,18 +27,19 @@ class _ContactPageState extends State<ContactPage> {
   late final ScrollController _singleChildScrollViewController;
   late final ScrollController _listViewController;
   final _overlayController = OverlayPortalController();
-  List<String> selectedFilters = <String>[];
+  late List<String> selectedFilters = <String>[];
 
   void _onConfirmFilters() {
-
     setState(() {});
 
     _overlayController.hide();
   }
 
-    Route _createRoute(int operatorId) {
+  Route _createRoute(int operatorId) {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => OperatorDetails(id: operatorId),
+      pageBuilder:
+          (context, animation, secondaryAnimation) =>
+              OperatorDetails(id: operatorId),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final Animation<double> curvedAnimation = CurvedAnimation(
           parent: animation,
@@ -49,6 +53,15 @@ class _ContactPageState extends State<ContactPage> {
 
   @override
   void initState() {
+    final pageNotifier = Provider.of<PageNotifier>(context, listen: false);
+    final payload = pageNotifier.payload;
+
+    if (payload is ContractPayload) {
+      selectedFilters = payload.filters;
+    } else {
+      selectedFilters = [];
+    }
+
     _singleChildScrollViewController = ScrollController();
     _listViewController = ScrollController();
 
@@ -83,7 +96,9 @@ class _ContactPageState extends State<ContactPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 96),
                 child: FutureBuilder(
-                  future: _operatorService.getOperatorFiltered(activities: selectedFilters),
+                  future: _operatorService.getOperatorFiltered(
+                    activities: selectedFilters,
+                  ),
                   builder: (
                     BuildContext context,
                     AsyncSnapshot<List<Operator>> snapshot,
@@ -165,7 +180,10 @@ class _ContactPageState extends State<ContactPage> {
                                                           .toList(),
                                                   filters: selectedFilters,
                                                   onConfirm: _onConfirmFilters,
-                                                  onCancel: () => _overlayController.hide(),
+                                                  onCancel:
+                                                      () =>
+                                                          _overlayController
+                                                              .hide(),
                                                 ),
                                               );
                                             },
@@ -198,15 +216,18 @@ class _ContactPageState extends State<ContactPage> {
                                                   ),
                                               child: FilterChip(
                                                 label: Text(activity),
-                                                selected: selectedFilters.contains(
-                                                  activity,
-                                                ),
+                                                selected: selectedFilters
+                                                    .contains(activity),
                                                 onSelected: (bool selected) {
                                                   setState(() {
                                                     if (selected) {
-                                                      selectedFilters.add(activity);
+                                                      selectedFilters.add(
+                                                        activity,
+                                                      );
                                                     } else {
-                                                      selectedFilters.remove(activity);
+                                                      selectedFilters.remove(
+                                                        activity,
+                                                      );
                                                     }
                                                   });
                                                 },
@@ -225,7 +246,10 @@ class _ContactPageState extends State<ContactPage> {
                                     .map(
                                       (op) => GeneralOperatorCardWidget(
                                         title: op.name,
-                                        onClick: () => Navigator.of(context).push(_createRoute(op.id)),
+                                        onClick:
+                                            () => Navigator.of(
+                                              context,
+                                            ).push(_createRoute(op.id)),
                                         subtitle: op.description,
                                         phone: op.phone,
                                         email: op.email,
