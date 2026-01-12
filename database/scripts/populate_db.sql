@@ -3,15 +3,28 @@
 -- =============================================================================
 
 -- Drop delle tabelle se esistono (in ordine inverso per via delle FOREIGN KEY)
+IF OBJECT_ID('dbo.users', 'U') IS NOT NULL DROP TABLE dbo.zones;
 IF OBJECT_ID('dbo.operator_zones', 'U') IS NOT NULL DROP TABLE dbo.operator_zones;
 IF OBJECT_ID('dbo.operator_activities', 'U') IS NOT NULL DROP TABLE dbo.operator_activities;
 IF OBJECT_ID('dbo.operators', 'U') IS NOT NULL DROP TABLE dbo.operators;
 IF OBJECT_ID('dbo.zones', 'U') IS NOT NULL DROP TABLE dbo.zones;
 IF OBJECT_ID('dbo.activities', 'U') IS NOT NULL DROP TABLE dbo.activities;
 IF OBJECT_ID('dbo.mapmarker', 'U') IS NOT NULL DROP TABLE dbo.mapmarker;
+IF OBJECT_ID('dbo.user_favorite_operators', 'U') IS NOT NULL DROP TABLE dbo.zones;
 GO
 
--- Tabella per i Punti Geografici di Interesse (come da tua definizione)
+-- Tabella per gli Utenti
+CREATE TABLE users (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,      
+    hashed_password VARCHAR(255) NOT NULL,   
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    created_at DATETIME2 DEFAULT GETDATE()   -
+);
+GO
+
+-- Tabella per i Punti Geografici di Interesse 
 CREATE TABLE mapmarker (
     id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -64,6 +77,15 @@ CREATE TABLE operator_activities (
     PRIMARY KEY (operator_id, activity_id),
     FOREIGN KEY (operator_id) REFERENCES operators(id) ON DELETE CASCADE,
     FOREIGN KEY (activity_id) REFERENCES activities(id) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE user_favorite_operators (
+    user_id INT NOT NULL,
+    operator_id INT NOT NULL,
+    PRIMARY KEY (user_id, operator_id), -- La coppia utente-operatore deve essere unica
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (operator_id) REFERENCES operators(id) ON DELETE CASCADE
 );
 GO
 
