@@ -9,7 +9,7 @@ class OperatorApi {
   final client = http.Client();
 
   Future<List<Operator>> getOperatorAll() async {
-    var uri = Uri.parse('$baseUrl/operator/');
+    var uri = Uri.parse('$baseUrl/operators/');
     var response = await client.get(uri);
     if (response.statusCode == 200) {
       return Operator.listOperatorFromJson(
@@ -20,7 +20,7 @@ class OperatorApi {
   }
 
   Future<List<Operator>> getOperatorFiltered(String queryString) async {
-    var uri = Uri.parse('$baseUrl/operator?$queryString');
+    var uri = Uri.parse('$baseUrl/operators?$queryString');
     var response = await client.get(uri);
     if (response.statusCode == 200) {
       return Operator.listOperatorFromJson(
@@ -31,7 +31,7 @@ class OperatorApi {
   }
 
   Future<Operator?> getOperatorById(int id) async {
-    var uri = Uri.parse('$baseUrl/operator/$id');
+    var uri = Uri.parse('$baseUrl/operators/$id');
     var response = await client.get(uri);
     if (response.statusCode == 200) {
       return Operator.operatorFromJson(

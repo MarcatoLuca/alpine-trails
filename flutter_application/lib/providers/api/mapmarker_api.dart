@@ -8,7 +8,7 @@ class MapMarkerApi {
   final client = http.Client();
 
   Future<List<MapMarker>> getMapMarkerAll() async {
-    var uri = Uri.parse('$baseUrl/map_markers/all');
+    var uri = Uri.parse('$baseUrl/map_markers/');
     var response = await client.get(uri);
     if (response.statusCode == 200) {
       return MapMarker.listMapMarkerFromJson(
