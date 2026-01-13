@@ -1,14 +1,17 @@
 from typing import List, Optional, TYPE_CHECKING
 from sqlmodel import Field, SQLModel, Relationship
 
+from ..activity import models as activity
+from ..zone import models as zone
+
 # Usiamo TYPE_CHECKING per evitare import circolari
+from ..operator_activity.models import OperatorActivity
+from ..operator_zone.models import OperatorZone
+from ..user_favorite_operators.models import UserFavoriteOperator
 if TYPE_CHECKING:
     from ..activity.models import Activity, ActivityPublic
     from ..zone.models import Zone, ZonePublic
     from ..user.models import User
-    from ..operator_activity.models import OperatorActivity
-    from ..operator_zone.models import OperatorZone
-    from ..user_favorite_operators.models import UserFavoriteOperator
 
 # --- Modello Base ---
 class OperatorBase(SQLModel):
@@ -44,3 +47,10 @@ class OperatorPublic(OperatorBase):
 class OperatorPublicWithDetails(OperatorPublic):
     activities: List["ActivityPublic"] = []
     zones: List["ZonePublic"] = []
+
+OperatorPublicWithDetails.model_rebuild(
+    _types_namespace={
+        "ActivityPublic": activity.ActivityPublic,
+        "ZonePublic": zone.ZonePublic,
+    }
+)

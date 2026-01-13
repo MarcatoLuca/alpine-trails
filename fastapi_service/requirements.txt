@@ -4,6 +4,8 @@ uvicorn[standard]
 passlib[bcrypt]
 python-dotenv 
 pyodbc
+python-jose[cryptography]
+python-multipart
 
 passlib==1.7.4
 bcrypt==4.0.1
