@@ -3,7 +3,7 @@ from sqlmodel import Field, SQLModel, Relationship
 
 from ..operator_zone.models import OperatorZone # Per i type hints
 if TYPE_CHECKING:
-    from ..operator.models import Operator
+    from ..operators.models import Operator
 
 class ZoneBase(SQLModel):
     name: str = Field(index=True, unique=True)

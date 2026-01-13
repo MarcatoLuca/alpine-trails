@@ -2,7 +2,7 @@ from typing import Optional, TYPE_CHECKING
 from sqlmodel import Field, SQLModel, Relationship
 
 if TYPE_CHECKING:
-    from ..operator.models import Operator # Corretto
+    from ..operators.models import Operator # Corretto
     from ..zone.models import Zone       # Corretto
 
 class OperatorZone(SQLModel, table=True): # Nome classe corretto

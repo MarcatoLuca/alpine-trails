@@ -3,7 +3,7 @@ from sqlmodel import Field, SQLModel, Relationship
 
 from ..operator_activity.models import OperatorActivity # Per i type hints
 if TYPE_CHECKING:
-    from ..operator.models import Operator
+    from ..operators.models import Operator
 
 class ActivityBase(SQLModel):
     name: str = Field(index=True)

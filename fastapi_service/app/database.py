@@ -8,7 +8,7 @@ from app.operator_zone import models as operator_zone_module       # Rinomino pe
 OperatorActivity = operator_activity_module.OperatorActivity
 OperatorZone = operator_zone_module.OperatorZone
 
-from app.operator import models as operator_models
+from app.operators import models as operator_models
 from app.activity import models as activity_models
 from app.zone import models as zone_models
 
