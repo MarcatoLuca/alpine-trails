@@ -7,16 +7,18 @@ from typing import Annotated, List
 from sqlalchemy.orm import selectinload
 from fastapi import Query
 
-from app.operator.outschema import OperatorOut
-from app.operator.models import Operator
+from app.operators.models import Operator
 from app.activity.models import Activity
 from app.zone.models import Zone
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/operator",
+    tags=["Operator"],
+)
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-@router.get("/operator/", response_model=List[OperatorOut])
+@router.get("/", response_model=List[OperatorOut])
 def get_all_operator(
     session: SessionDep,
     name: str | None = Query(default=None),
@@ -62,7 +64,7 @@ def get_all_operator(
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@router.get("/operator/{operator_id}", response_model=OperatorOut)
+@router.get("/{operator_id}", response_model=OperatorOut)
 def get_operator_by_id(
     operator_id: int,
     session: SessionDep,

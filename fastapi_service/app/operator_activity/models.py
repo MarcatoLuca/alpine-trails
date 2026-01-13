@@ -1,8 +1,8 @@
 from typing import Optional, TYPE_CHECKING
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, SQLModel
 
 if TYPE_CHECKING:
-    from ..operator.models import Operator # Corretto: punta al modulo operatore
+    from ..operators.models import Operator # Corretto: punta al modulo operatore
     from ..activity.models import Activity # Corretto: punta al modulo attività
 
 class OperatorActivity(SQLModel, table=True): # Nome classe corretto

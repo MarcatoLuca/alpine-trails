@@ -8,7 +8,8 @@ from sqlmodel import Session
 from app.database import create_db_and_tables, get_session
 
 from app.map_marker import router as map_marker_router
-from app.operator import router as operator_router
+from app.operators import router as operator_router
+from app.user import router as user_router
 
 
 import uvicorn
@@ -35,9 +36,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(map_marker_router.router, tags=["Map Marker"])
-app.include_router(operator_router.router, tags=["Operators"])
-
+app.include_router(map_marker_router.router)
+app.include_router(operator_router.router)
+app.include_router(user_router.router)
 
 @app.get("/helloworld")
 def hello_world():
