@@ -19,19 +19,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     _controller = ScrollController();
-
     super.initState();
   }
 
   Route _createRoute() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => Explore(),
+      pageBuilder: (context, animation, secondaryAnimation) => const Explore(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final Animation<double> curvedAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.fastEaseInToSlowEaseOut,
         );
-
         return ScaleTransition(scale: curvedAnimation, child: child);
       },
     );
@@ -45,74 +43,248 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
+      backgroundColor: const Color(
+        0xFFF8F9FA,
+      ), // Un grigio chiarissimo per far risaltare le card bianche
       body: StickyContainer(
         stickyChildren: [
           StickyWidget(
             initialPosition: StickyPosition(top: 20, right: 20),
             finalPosition: StickyPosition(top: 20, right: 20),
             controller: _controller,
-            child: UserAvatarMenuWidget(),
+            child: const UserAvatarMenuWidget(),
           ),
         ],
         child: SingleChildScrollView(
           controller: _controller,
-          padding: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
+          padding: const EdgeInsets.only(bottom: 32),
           child: Column(
-            spacing: 32,
             children: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 96),
-                  child: Column(
-                    spacing: 8,
-                    children: [
-                      Text(
-                        'Welcome on',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        'Alpine Trails',
-                        style: Theme.of(context).textTheme.displayMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              Center(
-                child: Text(
-                  'Your ultimate guide to exploring the wonders of the Dolomites',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              // --- HERO SECTION ---
+              _buildHero(theme),
 
               Padding(
-                padding: const EdgeInsets.only(top: 32, bottom: 32),
-                child: FilledButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(_createRoute());
-                  },
-                  label: const Text('Explore'),
-                  icon: const Icon(Icons.explore),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 32,
-                    ),
-                  ),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    // --- SEZIONE CATEGORIE RAPIDE ---
+                    _buildSectionTitle(theme, "Esplora per attività"),
+                    _buildCategoryGrid(),
+
+                    const SizedBox(height: 40),
+
+                    // --- SEZIONE CAROUSEL ---
+                    _buildSectionTitle(theme, "Destinazioni da Sogno"),
+                    Carousel(images: constants.homeCarouselImages),
+
+                    const SizedBox(height: 40),
+
+                    // --- SEZIONE STATISTICHE (I Numeri delle Dolomiti) ---
+                    _buildSectionTitle(theme, "I nostri numeri"),
+                    _buildStatsGrid(),
+
+                    const SizedBox(height: 40),
+
+                    // --- INFO CARD (Suggerimento Sicurezza) ---
+                    _buildSafetyCard(theme),
+                  ],
                 ),
               ),
-
-              Carousel(images: constants.homeCarouselImages),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: NavBar(index: 0),
+      bottomNavigationBar: const NavBar(index: 0),
+    );
+  }
+
+  // --- WIDGET: HERO SECTION ---
+  Widget _buildHero(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 100, 24, 40),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Benvenuto su',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: Colors.brown.shade300,
+            ),
+          ),
+          Text(
+            'Alpine Trails',
+            style: theme.textTheme.displayMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+              color: Colors.brown.shade900,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'La tua guida definitiva per esplorare le meraviglie delle Dolomiti',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54, fontSize: 16),
+          ),
+          const SizedBox(height: 32),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(_createRoute());
+            },
+            label: const Text('ESPLORA ORA'),
+            icon: const Icon(Icons.explore_rounded),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.brown,
+              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 36),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- WIDGET: TITOLO SEZIONE ---
+  Widget _buildSectionTitle(ThemeData theme, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16, top: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Colors.brown.shade900,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- WIDGET: GRIGLIA CATEGORIE ---
+  Widget _buildCategoryGrid() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _categoryIcon(Icons.hiking, "Trekking"),
+        _categoryIcon(Icons.directions_bike, "Biking"),
+        _categoryIcon(Icons.landscape, "Scalata"),
+        _categoryIcon(Icons.camera_alt, "Foto"),
+      ],
+    );
+  }
+
+  Widget _categoryIcon(IconData icon, String label) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+            ],
+          ),
+          child: Icon(icon, color: Colors.brown, size: 28),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- WIDGET: GRID DELLE STATISTICHE ---
+  Widget _buildStatsGrid() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.brown.shade900,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _statItem("1.200", "Km Sentieri"),
+          _statItem("45", "Rifugi"),
+          _statItem("12", "Cime >3k"),
+        ],
+      ),
+    );
+  }
+
+  Widget _statItem(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 11),
+        ),
+      ],
+    );
+  }
+
+  // --- WIDGET: SAFETY CARD ---
+  Widget _buildSafetyCard(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.orange.shade300, Colors.orange.shade600],
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.wb_sunny_rounded, color: Colors.white, size: 40),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  "Consiglio del Giorno",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "Il tempo in quota cambia rapidamente. Porta sempre una giacca a vento.",
+                  style: TextStyle(color: Colors.white, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

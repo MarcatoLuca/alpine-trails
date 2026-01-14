@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/pages/login.dart';
 
 import 'package:flutter_application/pages/services.dart';
 import 'package:flutter_application/pages/about.dart';
@@ -12,10 +13,12 @@ import 'package:flutter_application/pages/sub/splashscreen.dart';
 import 'package:flutter_application/providers/pagenotifier.dart';
 
 import 'package:flutter_application/route/routes.dart';
+import 'package:flutter_application/services/domain/auth.service.dart';
 
 class AppRouterDelegate extends RouterDelegate<AppRoute>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<AppRoute> {
   final PageNotifier notifier;
+  final AuthService authService;
   final MaterialPage<void> homePage = MaterialPage<void>(child: HomePage());
   final MaterialPage<void> aboutPage = MaterialPage<void>(child: AboutPage());
   final MaterialPage<void> contactPage = MaterialPage<void>(
@@ -28,19 +31,22 @@ class AppRouterDelegate extends RouterDelegate<AppRoute>
   @override
   final GlobalKey<NavigatorState> navigatorKey;
 
-  AppRouterDelegate({required this.notifier})
+  AppRouterDelegate({required this.notifier, required this.authService})
     : navigatorKey = GlobalKey<NavigatorState>() {
     notifier.addListener(notifyListeners);
+    authService.addListener(notifyListeners);
   }
 
   @override
   void dispose() {
     notifier.removeListener(notifyListeners);
+    authService.removeListener(notifyListeners);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+
     final List<Page<void>> pages = <Page<void>>[
       homePage,
       aboutPage,
@@ -52,8 +58,8 @@ class AppRouterDelegate extends RouterDelegate<AppRoute>
       pages: [
         if (notifier.isInitializing)
           const MaterialPage(key: ValueKey('Splash'), child: SplashScreen())
-        // else if (!authService.isAuthenticated)
-        //   const MaterialPage(key: ValueKey('Login'), child: LoginScreen())
+        else if (!authService.isLoggedIn)
+          const MaterialPage(key: ValueKey('Login'), child: LoginScreen())
         else ...[
           MaterialPage(key: const ValueKey('Home'), child: HomePage()),
 

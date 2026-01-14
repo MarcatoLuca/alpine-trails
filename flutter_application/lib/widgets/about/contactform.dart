@@ -21,39 +21,50 @@ class _ContactFormWidgetState extends State<ContactFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
 
     return Form(
       key: _formKey,
       child: Column(
         spacing: 8,
         children: [
-
           TextFormField(
             controller: requestController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your request';
-              }
-              return null;
-            },
-            maxLines: 3,
+            maxLines: 4,
             decoration: InputDecoration(
+              hintText: 'Come possiamo aiutarti?',
+              filled: true,
+              fillColor: Colors.white,
               border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
               ),
-              hintText: 'Enter your request',
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.brown.withValues(alpha: 0.2)),
+              ),
             ),
           ),
-          ConstrainedBox(
-            constraints: BoxConstraints(minHeight: 40, minWidth: width),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
             child: FilledButton.icon(
-              icon: const Icon(Icons.send),
-              label: const Text('Send'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.brown,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.send_rounded, size: 18),
+              label: const Text(
+                "INVIA RICHIESTA",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   final String emailBody = requestController.text;
-                  final String emailSubject = 'Request Information Mobile Alpine Trails';
+                  final String emailSubject =
+                      'Request Information Mobile Alpine Trails';
 
                   emailService.sendEmail(emailSubject, emailBody);
 
@@ -64,11 +75,6 @@ class _ContactFormWidgetState extends State<ContactFormWidget> {
                   );
                 }
               },
-              style: FilledButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
             ),
           ),
         ],

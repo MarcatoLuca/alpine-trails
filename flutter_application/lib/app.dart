@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application/providers/pagenotifier.dart';
 import 'package:flutter_application/route/routeinfoparser.dart';
 import 'package:flutter_application/route/routerdelegate.dart';
+import 'package:flutter_application/services/domain/auth.service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_application/theme/typography.dart';
 
@@ -15,6 +16,7 @@ class App extends StatelessWidget {
       routeInformationParser: AppRouteInformationParser(),
       routerDelegate: AppRouterDelegate(
         notifier: Provider.of<PageNotifier>(context),
+        authService: Provider.of<AuthService>(context),
       ),
       title: 'Alpine Trails',
       theme: ThemeData(

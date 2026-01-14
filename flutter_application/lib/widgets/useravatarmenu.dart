@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/services/domain/auth.service.dart';
+import 'package:provider/provider.dart';
 
 class UserAvatarMenuWidget extends StatefulWidget {
   const UserAvatarMenuWidget({super.key});
@@ -36,6 +38,7 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
     final double menuButtonWidth = width * 0.4;
@@ -112,7 +115,9 @@ class _UserAvatarMenuWidgetState extends State<UserAvatarMenuWidget>
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () async {
+                          await authService.logout();
+                        },
                       ),
                     ),
                   ],

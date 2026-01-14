@@ -14,10 +14,9 @@ class Explore extends StatefulWidget {
 
 class _ExploreState extends State<Explore> {
   late Future<List<MapMarker>> _mapMarkersFuture;
-  late List<MapMarker> _mapMarkers;
+  late List<MapMarker> _mapMarkers = [];
   MapMarker? _selectedMapMarker;
   final MapController _mapController = MapController();
-  OverlayEntry? overlayEntry;
 
   @override
   void initState() {
@@ -28,153 +27,191 @@ class _ExploreState extends State<Explore> {
   Future<List<MapMarker>> _fetchMapMarkers() async {
     final mapMarkerService = MapMarkerService();
     List<MapMarker> result = await mapMarkerService.getMapMarkerAll();
-
-    setState(() {
-      _mapMarkers = result;
-    });
-
+    setState(() => _mapMarkers = result);
     return result;
   }
 
   void handlePlaceSelection(BuildContext context, MapMarker marker) {
     setState(() {
-      _mapController.move(LatLng(marker.latitude, marker.longitude), 12);
+      _mapController.move(LatLng(marker.latitude, marker.longitude), 13);
       _selectedMapMarker = marker;
     });
-    _showOverlay(context);
   }
 
-  void _showOverlay(BuildContext context) async {
-    removeHighlightOverlay();
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
-    final double width = MediaQuery.of(context).size.width;
+    return Scaffold(
+      backgroundColor: const Color(0xFFFBFBFB), // Sfondo panna chiarissimo
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.brown, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          "ESPLORA",
+          style: TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+        ),
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          // --- BARRA DI RICERCA ---
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: _buildSearchBar(),
+          ),
 
-    overlayEntry = OverlayEntry(
-      builder: (context) {
-        return Positioned(
-          bottom: 0,
-          right: 0,
-          left: 0,
-          child: Container(
-            margin: EdgeInsets.only(left: 32, bottom: 32, right: 32),
-            child: SizedBox(
-              width: width,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      spacing: 4,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _selectedMapMarker!.name,
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            IconButton(
-                              onPressed: () => {removeHighlightOverlay()},
-                              icon: Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                        Text(_selectedMapMarker!.type),
-                        Text(_selectedMapMarker!.description ?? ''),
-                      ],
-                    ),
+          const SizedBox(height: 16),
+
+          // --- CONTENITORE MAPPA ---
+          Expanded(
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    )
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: ExploreMapWidget(
+                    mapMarkersFuture: _mapMarkersFuture,
+                    mapController: _mapController,
+                    onMapMarkerTap: (ctx, marker) => handlePlaceSelection(ctx, marker),
                   ),
                 ),
               ),
             ),
           ),
-        );
-      },
+
+          // --- SEZIONE DETTAGLI (Appare solo se selezioni un marker) ---
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: _selectedMapMarker == null ? 0 : 220,
+            child: _selectedMapMarker == null 
+              ? const SizedBox.shrink() 
+              : _buildDetailSection(theme),
+          ),
+          
+          if (_selectedMapMarker == null) 
+            const Padding(
+              padding: EdgeInsets.all(32.0),
+              child: Text(
+                "Tocca un segnaposto sulla mappa per vedere i dettagli",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+              ),
+            ),
+        ],
+      ),
     );
-
-    // inserting overlay entry
-    Overlay.of(context, debugRequiredFor: widget).insert(overlayEntry!);
   }
 
-  void removeHighlightOverlay() {
-    overlayEntry?.remove();
-    overlayEntry?.dispose();
-    overlayEntry = null;
+  Widget _buildSearchBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.brown.withOpacity(0.1)),
+      ),
+      child: Autocomplete<String>(
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text == '') return const Iterable<String>.empty();
+          return _mapMarkers
+              .where((marker) => marker.name.toLowerCase().contains(textEditingValue.text.toLowerCase()))
+              .map((marker) => marker.name);
+        },
+        fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+          return TextField(
+            controller: controller,
+            focusNode: focusNode,
+            decoration: const InputDecoration(
+              hintText: "Cerca un luogo meraviglioso...",
+              border: InputBorder.none,
+              icon: Icon(Icons.search, color: Colors.brown),
+            ),
+          );
+        },
+        onSelected: (String selection) {
+          var marker = _mapMarkers.singleWhere(
+            (m) => m.name.toLowerCase() == selection.toLowerCase(),
+          );
+          handlePlaceSelection(context, marker);
+        },
+      ),
+    );
   }
 
-  @override
-  void dispose() {
-    removeHighlightOverlay();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        spacing: 32,
+  Widget _buildDetailSection(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15)
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: Theme.of(context).colorScheme.primary,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedMapMarker!.name,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      _selectedMapMarker!.type.toUpperCase(),
+                      style: const TextStyle(fontSize: 11, color: Colors.brown, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
               ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
+              IconButton(
+                onPressed: () => setState(() => _selectedMapMarker = null),
+                icon: const Icon(Icons.close, size: 20),
+              )
+            ],
           ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              'Discover the Dolomite Wonders',
-              style: Theme.of(context).textTheme.displaySmall,
-              textAlign: TextAlign.center,
-            ),
+          const SizedBox(height: 12),
+          Text(
+            _selectedMapMarker!.description ?? 'Nessuna descrizione disponibile.',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.black54),
           ),
-
-          Padding(
-            padding: const EdgeInsets.only(left: 24, right: 24, top: 16),
-            child: Autocomplete<String>(
-              optionsBuilder: (TextEditingValue textEditingValue) {
-                if (textEditingValue.text == '') {
-                  return const Iterable<String>.empty();
-                }
-                return _mapMarkers
-                    .where((marker) {
-                      return marker.name.toLowerCase().contains(
-                        textEditingValue.text.toLowerCase(),
-                      );
-                    })
-                    .map((marker) => marker.name);
-              },
-              onSelected: (String selection) {
-                var marker = _mapMarkers.singleWhere(
-                  (marker) =>
-                      marker.name.toLowerCase() == selection.toLowerCase(),
-                );
-                handlePlaceSelection(context, marker);
-              },
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
-              child: ExploreMapWidget(
-                mapMarkersFuture: _mapMarkersFuture,
-                mapController: _mapController,
-                onMapMarkerTap: handlePlaceSelection,
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () {},
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.brown,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
+              child: const Text("VEDI DETTAGLI"),
             ),
-          ),
+          )
         ],
       ),
     );

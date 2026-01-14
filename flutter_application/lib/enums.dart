@@ -1,4 +1,4 @@
-enum PageName { home, about, contact, services }
+enum PageName { home, about, contact, services, splash, login }
 
 enum OperatorAvailability {
   unavailable('Non Disponibile'),

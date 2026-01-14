@@ -27,7 +27,7 @@ class AuthService with ChangeNotifier {
       }
 
       bool isTokenExpired = JwtDecoder.isExpired(accessToken);
-      
+
       if (isTokenExpired) {
         logger.w('Access token scaduto offline. Provo il refresh...');
         if (refreshToken != null) {
@@ -63,9 +63,9 @@ class AuthService with ChangeNotifier {
   Future<bool> fetchUserProfile() async {
     try {
       final token = await _storage.read(key: 'access_token');
-      
+
       final response = await _apiClient.get(
-        '/users/me', 
+        '/user/me',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -86,15 +86,21 @@ class AuthService with ChangeNotifier {
       if (refreshToken == null) return false;
 
       final response = await _apiClient.post(
-        '/users/refresh', // Assicurati di avere questo endpoint nel backend
+        '/user/refresh', // Assicurati di avere questo endpoint nel backend
         data: {'refresh_token': refreshToken},
       );
 
       if (response.statusCode == 200) {
-        await _storage.write(key: 'access_token', value: response.data['access_token']);
+        await _storage.write(
+          key: 'access_token',
+          value: response.data['access_token'],
+        );
         // Se il backend ne fornisce uno nuovo, aggiorna anche il refresh_token
         if (response.data['refresh_token'] != null) {
-          await _storage.write(key: 'refresh_token', value: response.data['refresh_token']);
+          await _storage.write(
+            key: 'refresh_token',
+            value: response.data['refresh_token'],
+          );
         }
         return true;
       }
@@ -108,15 +114,21 @@ class AuthService with ChangeNotifier {
   Future<void> login(String email, String password) async {
     try {
       final response = await _apiClient.post(
-        '/users/token',
+        '/user/token',
         data: {'username': email, 'password': password},
         options: Options(contentType: Headers.formUrlEncodedContentType),
       );
 
       if (response.statusCode == 200) {
-        await _storage.write(key: 'access_token', value: response.data['access_token']);
-        await _storage.write(key: 'refresh_token', value: response.data['refresh_token']);
-        
+        await _storage.write(
+          key: 'access_token',
+          value: response.data['access_token'],
+        );
+        await _storage.write(
+          key: 'refresh_token',
+          value: response.data['refresh_token'],
+        );
+
         _isLoggedIn = true;
         await fetchUserProfile(); // Carica i dati utente subito dopo il login
         notifyListeners();
@@ -128,8 +140,11 @@ class AuthService with ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _clearSession();
-    notifyListeners();
+    try {
+      await _clearSession();
+    } finally {
+      notifyListeners();
+    }
   }
 
   /// Pulisce i dati locali

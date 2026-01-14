@@ -18,7 +18,10 @@ class _NavBarState extends State<NavBar> {
     final notifier = Provider.of<PageNotifier>(context);
 
     return NavigationBar(
-      height: 60,
+      elevation: 10,
+      backgroundColor: Colors.white,
+      indicatorColor: Colors.brown.withOpacity(0.1),
+      height: 70,
       selectedIndex: widget.currentPageIndex,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
       onDestinationSelected: (int index) {
@@ -57,10 +60,10 @@ class _NavBarState extends State<NavBar> {
       },
 
       destinations: <Widget>[
-        NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-        NavigationDestination(icon: Icon(Icons.list_alt), label: 'Contact'),
-        NavigationDestination(icon: Icon(Icons.hiking), label: 'Services'),
-        NavigationDestination(icon: Icon(Icons.info), label: 'About'),
+        NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home, color: Colors.brown), label: 'Home'),
+        NavigationDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore, color: Colors.brown), label: 'Contact'),
+        NavigationDestination(icon: Icon(Icons.hiking_outlined), selectedIcon: Icon(Icons.hiking, color: Colors.brown), label: 'Services'),
+        NavigationDestination(icon: Icon(Icons.info_outline), selectedIcon: Icon(Icons.info, color: Colors.brown), label: 'About'),
       ],
     );
   }
