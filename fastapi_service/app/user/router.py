@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 
 from app.database import get_session
@@ -15,14 +15,17 @@ from app.security import (
     verify_password,
     create_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES,
+    SECRET_KEY,
 )
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/token")
 
 router = APIRouter(
     prefix="/user",
     tags=["User"],
 )
-SessionDep = Annotated[Session, Depends(get_session)]
 
+SessionDep = Annotated[Session, Depends(get_session)]
 
 def authenticate_user(session: Session, email: str, password: str):
     """
@@ -35,6 +38,28 @@ def authenticate_user(session: Session, email: str, password: str):
         return None  # La password è sbagliata
     return user  # Autenticazione riuscita
 
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)], 
+    session: SessionDep
+) -> User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        # Decodifica il token usando la SECRET_KEY degli access token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+        
+    user = session.exec(select(User).where(User.email == email)).first()
+    if user is None:
+        raise credentials_exception
+    return user
 
 @router.post("/token", response_model=Token)
 def login_for_access_token(
@@ -127,3 +152,12 @@ def create_user(*, session: Session = Depends(get_session), user_in: UserCreate)
     session.refresh(db_user)
 
     return db_user
+
+@router.get("/me", response_model=UserPublic)
+async def read_users_me(
+    current_user: Annotated[User, Depends(get_current_user)]
+):
+    """
+    Restituisce i dati dell'utente corrente se il token è valido.
+    """
+    return current_user
