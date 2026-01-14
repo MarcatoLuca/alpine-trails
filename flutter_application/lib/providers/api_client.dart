@@ -1,0 +1,35 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logger/logger.dart';
+
+class ApiClient {
+  final Logger logger = Logger();
+  final Dio _dio;
+
+  ApiClient() : _dio = Dio() {
+    _dio.options.baseUrl = dotenv.env['BASE_URL'] ?? 'default_url';
+    
+    // Qui è dove aggiungeremo gli interceptor in futuro!
+    // _dio.interceptors.add(AuthInterceptor()); 
+  }
+
+  // Metodo generico per le chiamate GET
+  Future<Response> get(String path, {Map<String, dynamic>? queryParameters, Options? options}) async {
+    try {
+      return await _dio.get(path, queryParameters: queryParameters, options: options);
+    } on DioException catch (e) {
+      logger.e('Errore nella chiamata GET a $path: $e');
+      rethrow;
+    }
+  }
+  
+  // Metodo generico per le chiamate POST
+  Future<Response> post(String path, {dynamic data, Options? options}) async {
+    try {
+      return await _dio.post(path, data: data, options: options);
+    } on DioException catch (e) {
+      logger.e('Errore nella chiamata POST a $path: $e');
+      rethrow;
+    }
+  }
+}

@@ -7,6 +7,7 @@ import 'package:flutter_application/pages/home.dart';
 import 'package:flutter_application/pages/pagenotfound.dart';
 
 import 'package:flutter_application/enums.dart';
+import 'package:flutter_application/pages/sub/splashscreen.dart';
 
 import 'package:flutter_application/providers/pagenotifier.dart';
 
@@ -15,9 +16,6 @@ import 'package:flutter_application/route/routes.dart';
 class AppRouterDelegate extends RouterDelegate<AppRoute>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<AppRoute> {
   final PageNotifier notifier;
-
-  AppRouterDelegate({required this.notifier});
-
   final MaterialPage<void> homePage = MaterialPage<void>(child: HomePage());
   final MaterialPage<void> aboutPage = MaterialPage<void>(child: AboutPage());
   final MaterialPage<void> contactPage = MaterialPage<void>(
@@ -28,7 +26,18 @@ class AppRouterDelegate extends RouterDelegate<AppRoute>
   );
 
   @override
-  GlobalKey<NavigatorState>? get navigatorKey => GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> navigatorKey;
+
+  AppRouterDelegate({required this.notifier})
+    : navigatorKey = GlobalKey<NavigatorState>() {
+    notifier.addListener(notifyListeners);
+  }
+
+  @override
+  void dispose() {
+    notifier.removeListener(notifyListeners);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,71 +50,61 @@ class AppRouterDelegate extends RouterDelegate<AppRoute>
     return Navigator(
       key: navigatorKey,
       pages: [
-        if (notifier.isUnknown) const MaterialPage(child: PageNotFound()),
-        if (!notifier.isUnknown) homePage,
-        if (notifier.pageName == PageName.home) homePage,
-        if (notifier.pageName == PageName.about) aboutPage,
-        if (notifier.pageName == PageName.contact) contactPage,
-        if (notifier.pageName == PageName.services) servicePage,
+        if (notifier.isInitializing)
+          const MaterialPage(key: ValueKey('Splash'), child: SplashScreen())
+        // else if (!authService.isAuthenticated)
+        //   const MaterialPage(key: ValueKey('Login'), child: LoginScreen())
+        else ...[
+          MaterialPage(key: const ValueKey('Home'), child: HomePage()),
+
+          if (notifier.pageName == PageName.about)
+            MaterialPage(key: ValueKey('About'), child: AboutPage()),
+
+          if (notifier.pageName == PageName.contact)
+            const MaterialPage(key: ValueKey('Contact'), child: ContactPage()),
+
+          if (notifier.pageName == PageName.services)
+            const MaterialPage(
+              key: ValueKey('Services'),
+              child: ServicesPage(),
+            ),
+
+          // Errore 404
+          if (notifier.isUnknown)
+            const MaterialPage(key: ValueKey('Unknown'), child: PageNotFound()),
+        ],
       ],
       onDidRemovePage: (page) => pages.remove(page),
     );
   }
 
-  //currentConfiguration is called whenever there might be a change in route
-  //It checks for the current page or route and return a new route information
-  //This is what populates our browser history
   @override
   AppRoute? get currentConfiguration {
-    if (notifier.isUnknown) {
-      return AppRoute.unknown();
-    }
-
-    if (notifier.pageName == PageName.home) {
-      return AppRoute.home();
-    }
-
-    if (notifier.pageName == PageName.about) {
-      return AppRoute.about();
-    }
-
-    if (notifier.pageName == PageName.contact) {
-      return AppRoute.contact();
-    }
-
-    if (notifier.pageName == PageName.services) {
-      return AppRoute.services();
-    }
-
-    return AppRoute.unknown();
+    if (notifier.isInitializing)
+      return null; // Non mostrare URL durante il caricamento
+    if (notifier.isUnknown) return AppRoute.unknown();
+    if (notifier.pageName == PageName.about) return AppRoute.about();
+    if (notifier.pageName == PageName.contact) return AppRoute.contact();
+    if (notifier.pageName == PageName.services) return AppRoute.services();
+    return AppRoute.home();
   }
 
-  //This is called whenever the system detects a new route is passed
-  //It checks the current route through the configuration and uses that to update the notifier
   @override
   Future<void> setNewRoutePath(AppRoute configuration) async {
     if (configuration.isUnknown) {
       _updateRoute(page: null, isUnknown: true);
-    }
-
-    if (configuration.isAbout) {
+    } else if (configuration.isAbout) {
       _updateRoute(page: PageName.about);
-    }
-
-    if (configuration.isContact) {
+    } else if (configuration.isContact) {
       _updateRoute(page: PageName.contact);
-    }
-
-    if (configuration.isServices) {
+    } else if (configuration.isServices) {
       _updateRoute(page: PageName.services);
-    }
-
-    if (configuration.isHome) {
+    } else {
       _updateRoute(page: PageName.home);
     }
   }
 
-  _updateRoute({PageName? page, bool isUnknown = false}) {
+  void _updateRoute({PageName? page, bool isUnknown = false}) {
     notifier.changePage(page: page, unknown: isUnknown);
   }
 }

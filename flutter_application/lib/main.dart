@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/app.dart';
 import 'package:flutter_application/providers/pagenotifier.dart';
+import 'package:flutter_application/services/domain/auth.service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
@@ -23,6 +24,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<PageNotifier>(
           create: (context) => PageNotifier(),
+        ),
+        ChangeNotifierProvider<AuthService>(
+          create: (context) => AuthService(),
         ),
       ],
       child: const App(),

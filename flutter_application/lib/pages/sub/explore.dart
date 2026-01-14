@@ -26,7 +26,7 @@ class _ExploreState extends State<Explore> {
   }
 
   Future<List<MapMarker>> _fetchMapMarkers() async {
-    final mapMarkerService = MapmarkerService();
+    final mapMarkerService = MapMarkerService();
     List<MapMarker> result = await mapMarkerService.getMapMarkerAll();
 
     setState(() {
