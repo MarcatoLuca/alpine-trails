@@ -32,4 +32,14 @@ class ApiClient {
       rethrow;
     }
   }
+
+    // Metodo generico per le chiamate DELETE
+  Future<Response> delete(String path, {dynamic data, Options? options}) async {
+    try {
+      return await _dio.delete(path, data: data, options: options);
+    } on DioException catch (e) {
+      logger.e('Errore nella chiamata POST a $path: $e');
+      rethrow;
+    }
+  }
 }

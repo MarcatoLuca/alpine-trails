@@ -12,6 +12,7 @@ class Operator {
   String? website;
   List<Activity>? activities;
   List<Zone>? zones;
+  bool? isFavorite;
 
   Operator({
     required this.id,
@@ -22,6 +23,7 @@ class Operator {
     this.website,
     this.activities,
     this.zones,
+    this.isFavorite,
   });
 
   factory Operator.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,7 @@ class Operator {
               .map((x) => Activity.fromJson(x))
               .toList(),
       zones: (json['zones'] as List).map((x) => Zone.fromJson(x)).toList(),
+      isFavorite: json['is_favorite'] as bool,
     );
   }
 
@@ -50,6 +53,7 @@ class Operator {
       'website': website,
       'activities': activities,
       'zones': zones,
+      'is_favorite': isFavorite,
     };
   }
 

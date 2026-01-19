@@ -157,7 +157,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // --- WIDGET: TITOLO SEZIONE ---
   Widget _buildSectionTitle(ThemeData theme, String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16, top: 8),
+      padding: const EdgeInsets.only(bottom: 16, top: 16),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(

@@ -26,27 +26,15 @@ class _ContactPageState extends State<ContactPage> {
   late final ScrollController _listViewController;
   final _overlayController = OverlayPortalController();
   late List<String> selectedFilters = <String>[];
+  List<Operator>? _operators; // La nostra lista locale
+  bool _isLoading = false;
 
   late Future<List<Operator>> _allOperatorsInitialFuture;
 
-  Route _createRoute(int operatorId) {
-    return PageRouteBuilder(
-      pageBuilder:
-          (context, animation, secondaryAnimation) =>
-              OperatorDetails(id: operatorId),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final Animation<double> curvedAnimation = CurvedAnimation(
-          parent: animation,
-          curve: Curves.fastEaseInToSlowEaseOut,
-        );
-
-        return ScaleTransition(scale: curvedAnimation, child: child);
-      },
-    );
-  }
-
   @override
   void initState() {
+    _fetchOperators();
+
     _allOperatorsInitialFuture = _operatorService.getOperatorFiltered(
       activities: [],
     );
@@ -64,6 +52,58 @@ class _ContactPageState extends State<ContactPage> {
     _listViewController = ScrollController();
 
     super.initState();
+  }
+
+  Future<void> _fetchOperators() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    try {
+      final data = await _operatorService.getOperatorFiltered(
+        activities: selectedFilters,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _operators = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      logger.e("Errore caricamento: $e");
+    }
+  }
+
+  Route _createRoute(int operatorId, bool isFavorite) {
+    return PageRouteBuilder(
+      pageBuilder:
+          (context, animation, secondaryAnimation) => OperatorDetails(
+            id: operatorId,
+            isFavorite: isFavorite,
+            onStatusChanged: (updatedOperator) {
+              updateListOperator(updatedOperator);
+            },
+          ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final Animation<double> curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.fastEaseInToSlowEaseOut,
+        );
+
+        return ScaleTransition(scale: curvedAnimation, child: child);
+      },
+    );
+  }
+
+  void updateListOperator(Operator updatedOp) {
+    if (!mounted) return;
+
+    setState(() {
+      final index = _operators?.indexWhere((op) => op.id == updatedOp.id) ?? -1;
+      if (index != -1) {
+        _operators![index] = updatedOp;
+      }
+    });
   }
 
   @override
@@ -116,7 +156,7 @@ class _ContactPageState extends State<ContactPage> {
                   if (!snapshot.hasData) return const SizedBox(height: 50);
 
                   // Estraiamo tutte le attività disponibili dai dati
-                  final  allActivities =
+                  final allActivities =
                       snapshot.data!
                           .expand((op) => op.activities ?? [])
                           .map((a) => a.name as String)
@@ -183,43 +223,32 @@ class _ContactPageState extends State<ContactPage> {
 
               const SizedBox(height: 24),
 
-              // Lista Operatori
-              FutureBuilder<List<Operator>>(
-                future: _operatorService.getOperatorFiltered(
-                  activities: selectedFilters,
+              // Lista operatori
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (_operators == null || _operators!.isEmpty)
+                const Center(child: Text("Nessun operatore trovato"))
+              else
+                Column(
+                  children:
+                      _operators!
+                          .map(
+                            (op) => GeneralOperatorCardWidget(
+                              title: op.name,
+                              subtitle: op.description,
+                              phone: op.phone,
+                              email: op.email,
+                              website: op.website,
+                              activities: op.activities,
+                              zones: op.zones,
+                              onClick:
+                                  () => Navigator.of(context).push(
+                                    _createRoute(op.id, op.isFavorite ?? false),
+                                  ),
+                            ),
+                          )
+                          .toList(),
                 ),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Text("Nessun operatore trovato"),
-                    );
-                  }
-
-                  return Column(
-                    children:
-                        snapshot.data!
-                            .map(
-                              (op) => GeneralOperatorCardWidget(
-                                title: op.name,
-                                subtitle: op.description,
-                                phone: op.phone,
-                                email: op.email,
-                                website: op.website,
-                                activities: op.activities,
-                                zones: op.zones,
-                                onClick:
-                                    () => Navigator.of(
-                                      context,
-                                    ).push(_createRoute(op.id)),
-                              ),
-                            )
-                            .toList(),
-                  );
-                },
-              ),
             ],
           ),
         ),
@@ -229,7 +258,6 @@ class _ContactPageState extends State<ContactPage> {
   }
 
   Widget _buildFilterOverlay(List<String> data) {
-
     return Container(
       color: Colors.black54,
       alignment: Alignment.center,
