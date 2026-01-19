@@ -37,8 +37,7 @@ def get_all_operators(  # Nome funzione al plurale
     )
 
     if name:
-        statement = statement.where(models.Operator.
-        name.ilike(f"%{name}%"))
+        statement = statement.where(models.Operator.name.ilike(f"%{name}%"))
     if zone_name:
         statement = statement.where(models.Operator.zones.any(Zone.name == zone_name))
     if activity_names:
@@ -107,7 +106,9 @@ def get_favorite_operators(
     return [op.id for op in current_user.favorite_operators]
 
 
-@router.post("/favorites/{operator_id}", response_model=models.OperatorPublic)
+@router.post(
+    "/favorites/{operator_id}", response_model=models.OperatorPublicWithDetails
+)
 def add_favorite_operator(
     operator_id: int,
     session: SessionDep,
@@ -118,22 +119,24 @@ def add_favorite_operator(
     """
     operator = session.get(models.Operator, operator_id)
     if not operator:
-        raise HTTPException(
-            status_code=404, detail=f"Operator with id {operator_id} not found"
-        )
+        raise HTTPException(status_code=404, detail="Operator not found")
 
-    if operator in current_user.favorite_operators:
-        return operator
+    if operator not in current_user.favorite_operators:
+        current_user.favorite_operators.append(operator)
+        session.add(current_user)
+        session.commit()
+        session.refresh(operator, ["activities", "zones"])
+    else:
+        session.refresh(operator, ["activities", "zones"])
 
-    current_user.favorite_operators.append(operator)
-    session.add(current_user)
-    session.commit()
-    session.refresh(current_user)
-
-    return operator
+    operator_data = models.OperatorPublicWithDetails.model_validate(operator)
+    operator_data.is_favorite = True
+    return operator_data
 
 
-@router.delete("/favorites/{operator_id}", response_model=models.OperatorPublic)
+@router.delete(
+    "/favorites/{operator_id}", response_model=models.OperatorPublicWithDetails
+)
 def remove_favorite_operator(
     operator_id: int,
     session: SessionDep,
@@ -144,16 +147,16 @@ def remove_favorite_operator(
     """
     operator = session.get(models.Operator, operator_id)
     if not operator:
-        raise HTTPException(
-            status_code=404, detail=f"Operator with id {operator_id} not found"
-        )
+        raise HTTPException(status_code=404, detail="Operator not found")
 
-    if operator not in current_user.favorite_operators:
-        return operator
+    if operator in current_user.favorite_operators:
+        current_user.favorite_operators.remove(operator)
+        session.add(current_user)
+        session.commit()
+        session.refresh(operator, ["activities", "zones"])
+    else:
+        session.refresh(operator, ["activities", "zones"])
 
-    current_user.favorite_operators.remove(operator)
-    session.add(current_user)
-    session.commit()
-    session.refresh(current_user)
-
-    return operator
+    operator_data = models.OperatorPublicWithDetails.model_validate(operator)
+    operator_data.is_favorite = False
+    return operator_data
