@@ -27,6 +27,9 @@ class AppRouterDelegate extends RouterDelegate<AppRoute>
   final MaterialPage<void> servicePage = MaterialPage<void>(
     child: ServicesPage(),
   );
+  final MaterialPage<void> splashScreen = MaterialPage<void>(
+    child: SplashScreen(),
+  );
 
   @override
   final GlobalKey<NavigatorState> navigatorKey;
@@ -46,13 +49,14 @@ class AppRouterDelegate extends RouterDelegate<AppRoute>
 
   @override
   Widget build(BuildContext context) {
-
     final List<Page<void>> pages = <Page<void>>[
       homePage,
       aboutPage,
       contactPage,
       servicePage,
+      splashScreen,
     ];
+
     return Navigator(
       key: navigatorKey,
       pages: [
@@ -97,8 +101,14 @@ class AppRouterDelegate extends RouterDelegate<AppRoute>
 
   @override
   Future<void> setNewRoutePath(AppRoute configuration) async {
+    if (notifier.isInitializing) {
+      return;
+    }
+
     if (configuration.isUnknown) {
       _updateRoute(page: null, isUnknown: true);
+    } else if (configuration.isSplash) {
+      _updateRoute(page: PageName.splash);
     } else if (configuration.isAbout) {
       _updateRoute(page: PageName.about);
     } else if (configuration.isContact) {

@@ -20,7 +20,6 @@ class PageNotifier extends ChangeNotifier {
   changePage({required PageName? page, required bool unknown, Object? payload,}) {
     _pageName = page;
     _unknownPath = unknown;
-    _isInitializing = false; 
     _payload = payload;
     notifyListeners();
   }
