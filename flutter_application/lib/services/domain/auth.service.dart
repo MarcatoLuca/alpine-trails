@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/providers/api_client.dart';
+import 'package:flutter_application/providers/auth_events.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
@@ -12,6 +13,13 @@ class AuthService with ChangeNotifier {
 
   bool _isLoggedIn = false;
   Map<String, dynamic>? _userData;
+
+  AuthService() {
+    AuthEvents.onLogout.listen((_) {
+      _clearSession();
+      notifyListeners();
+    });
+  }
 
   bool get isLoggedIn => _isLoggedIn;
   Map<String, dynamic>? get userData => _userData;
@@ -62,15 +70,10 @@ class AuthService with ChangeNotifier {
   /// Recupera i dati del profilo utente (Verifica Online)
   Future<bool> fetchUserProfile() async {
     try {
-      final token = await _storage.read(key: 'access_token');
-
-      final response = await _apiClient.get(
-        '/user/me',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+      final response = await _apiClient.get('/user/me');
 
       if (response.statusCode == 200) {
-        _userData = response.data; // Salviamo i dati dell'utente
+        _userData = response.data;
         return true;
       }
       return false;

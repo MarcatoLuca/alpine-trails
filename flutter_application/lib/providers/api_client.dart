@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_application/providers/auth_interceptor.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logger/logger.dart';
 
@@ -9,8 +10,9 @@ class ApiClient {
   ApiClient() : _dio = Dio() {
     _dio.options.baseUrl = dotenv.env['BASE_URL'] ?? 'default_url';
     
-    // Qui è dove aggiungeremo gli interceptor in futuro!
-    // _dio.interceptors.add(AuthInterceptor()); 
+    _dio.interceptors.add(AuthInterceptor(_dio));
+    
+    _dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
   }
 
   // Metodo generico per le chiamate GET
