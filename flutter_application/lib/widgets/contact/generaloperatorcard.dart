@@ -4,7 +4,6 @@ import 'package:flutter_application/models/activity.dart';
 import 'package:flutter_application/models/zone.dart';
 import 'package:flutter_application/services/email_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:math' as math;
 
 class GeneralOperatorCardWidget extends StatelessWidget {
   GeneralOperatorCardWidget({
@@ -20,7 +19,7 @@ class GeneralOperatorCardWidget extends StatelessWidget {
   });
 
   final String title;
-  final Function onClick;
+  final VoidCallback onClick;
   final String? subtitle;
   final String? phone;
   final String? email;
@@ -32,284 +31,127 @@ class GeneralOperatorCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.sizeOf(context).width;
-
-    return Card(
-      color: Colors.white,
-      semanticContainer: true,
-      clipBehavior: Clip.hardEdge,
-      child: SizedBox(
-        width: width,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 8,
-            children: [
-              // Title
-              Flexible(
-                child: Container(
-                  padding: EdgeInsets.only(right: 30.0),
-                  child: Text(
-                    title,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                      color: Colors.brown,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Titolo e Sottotitolo
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown),
                 ),
-              ),
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(subtitle!, style: const TextStyle(color: Colors.black54, fontSize: 14)),
+                ],
+                const SizedBox(height: 20),
 
-              // Subtitle
-              if (subtitle != null && subtitle!.trim() != '') Text(subtitle!),
+                // Contatti
+                _buildContactRow(Icons.phone_outlined, phone, "tel://$phone"),
+                _buildContactRow(Icons.email_outlined, email, "mailto:$email"),
+                _buildContactRow(Icons.language_outlined, website, website, isLink: true),
 
-              // Body
-              Container(
-                margin: EdgeInsets.only(top: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 16,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 8,
-                      children: [
-                        if (phone != null && phone!.trim() != '')
-                          Row(
-                            spacing: 12,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(Icons.phone, color: Colors.brown),
-                              RichText(
-                                text: TextSpan(
-                                  text: phone!,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  recognizer:
-                                      TapGestureRecognizer()
-                                        ..onTap =
-                                            () => launchUrl(
-                                              Uri.parse("tel://$phone"),
-                                            ),
-                                ),
-                              ),
-                            ],
-                          ),
+                const SizedBox(height: 20),
 
-                        if (email != null && email!.trim() != '')
-                          Row(
-                            spacing: 12,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(Icons.email, color: Colors.brown),
-                              RichText(
-                                text: TextSpan(
-                                  text: email!,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  recognizer:
-                                      TapGestureRecognizer()
-                                        ..onTap = () {
-                                          const emptyString = '';
-                                          emailService.sendEmail(
-                                            emptyString,
-                                            emptyString,
-                                            emailTo: email!,
-                                          );
-                                        },
-                                ),
-                              ),
-                            ],
-                          ),
-
-                        if (website != null && website!.trim() != '')
-                          Row(
-                            spacing: 12,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(Icons.language, color: Colors.brown),
-                              RichText(
-                                text: TextSpan(
-                                  text: website!,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodyMedium!.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                  recognizer:
-                                      TapGestureRecognizer()
-                                        ..onTap =
-                                            () =>
-                                                launchUrl(Uri.parse(website!)),
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-
-                    if (activities != null && activities!.isNotEmpty)
-                      Column(
-                        spacing: 8,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Activities:',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium!.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          Wrap(
-                            children: [
-                              ...activities!.map((activity) {
-                                // Genera un colore di background pastello chiaro
-                                final hue = math.Random().nextDouble() * 360;
-                                final backgroundColor =
-                                    HSLColor.fromAHSL(
-                                      1.0,
-                                      hue,
-                                      0.5,
-                                      0.85,
-                                    ).toColor();
-
-                                final textColor =
-                                    HSLColor.fromColor(backgroundColor)
-                                        .withLightness(
-                                          (HSLColor.fromColor(
-                                                    backgroundColor,
-                                                  ).lightness *
-                                                  0.5)
-                                              .clamp(0.0, 1.0),
-                                        )
-                                        .toColor();
-
-                                return Container(
-                                  margin: const EdgeInsets.all(6.0),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4.0,
-                                    horizontal: 8.0,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: backgroundColor,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    activity.name,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall!.copyWith(
-                                      color: textColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                    if (zones != null && zones!.isNotEmpty)
-                      Column(
-                        spacing: 8,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Zones:',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyLarge!.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Wrap(
-                            children: [
-                              ...zones!.map((zone) {
-                                // Genera un colore di background pastello chiaro
-                                final backgroundColor = const Color.fromARGB(
-                                  255,
-                                  235,
-                                  235,
-                                  235,
-                                );
-
-                                final textColor = const Color.fromARGB(
-                                  255,
-                                  79,
-                                  79,
-                                  79,
-                                );
-
-                                return Container(
-                                  margin: const EdgeInsets.all(6.0),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4.0,
-                                    horizontal: 8.0,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: backgroundColor,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    zone.name,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall!.copyWith(
-                                      color: textColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Divider(),
-              ),
-
-              // Footer
-              SizedBox(
-                width: width,
-                child: FilledButton.icon(
-                  onPressed: () => onClick(),
-                  label: Text(
-                    'Get more information',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall!.copyWith(color: Colors.white),
+                // Attività (Chip Alpine Style)
+                if (activities != null && activities!.isNotEmpty) ...[
+                  const Text("ATTIVITÀ", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: activities!.map((a) => _buildChip(a.name, Colors.brown.shade50, Colors.brown)).toList(),
                   ),
-                  icon: const Icon(Icons.info),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 32,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
-                    ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Zone
+                if (zones != null && zones!.isNotEmpty) ...[
+                  const Text("ZONE", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: zones!.map((z) => _buildChip(z.name, Colors.grey.shade100, Colors.black87)).toList(),
                   ),
-                ),
-              ),
-            ],
+                ],
+              ],
+            ),
           ),
+
+          // Footer Button
+          InkWell(
+            onTap: onClick,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.brown.shade800,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.info_outline, color: Colors.white, size: 18),
+                  SizedBox(width: 8),
+                  Text("MAGGIORI INFORMAZIONI", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactRow(IconData icon, String? value, String? url, {bool isLink = false}) {
+    if (value == null || value.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: InkWell(
+        onTap: () => launchUrl(Uri.parse(url!)),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: Colors.brown.shade300),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isLink ? Colors.blue.shade700 : Colors.black87,
+                  decoration: isLink ? TextDecoration.underline : null,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildChip(String label, Color bg, Color text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
+      child: Text(label, style: TextStyle(color: text, fontSize: 12, fontWeight: FontWeight.w600)),
     );
   }
 }

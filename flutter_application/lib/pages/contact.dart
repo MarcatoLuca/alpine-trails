@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/interfaces/payloads/contract_payload.dart';
-import 'package:flutter_application/models/activity.dart';
 import 'package:flutter_application/models/operator.dart';
 import 'package:flutter_application/pages/sub/operator.dart';
 import 'package:flutter_application/providers/pagenotifier.dart';
@@ -11,7 +10,6 @@ import 'package:logger/logger.dart';
 import 'package:flutter_sticky_widgets/flutter_sticky_widgets.dart';
 import 'package:flutter_application/widgets/useravatarmenu.dart';
 import 'package:provider/provider.dart';
-
 import '../widgets/navbar.dart';
 
 class ContactPage extends StatefulWidget {
@@ -29,11 +27,7 @@ class _ContactPageState extends State<ContactPage> {
   final _overlayController = OverlayPortalController();
   late List<String> selectedFilters = <String>[];
 
-  void _onConfirmFilters() {
-    setState(() {});
-
-    _overlayController.hide();
-  }
+  late Future<List<Operator>> _allOperatorsInitialFuture;
 
   Route _createRoute(int operatorId) {
     return PageRouteBuilder(
@@ -53,6 +47,10 @@ class _ContactPageState extends State<ContactPage> {
 
   @override
   void initState() {
+    _allOperatorsInitialFuture = _operatorService.getOperatorFiltered(
+      activities: [],
+    );
+
     final pageNotifier = Provider.of<PageNotifier>(context, listen: false);
     final payload = pageNotifier.payload;
 
@@ -79,199 +77,172 @@ class _ContactPageState extends State<ContactPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFBFBFB),
       body: StickyContainer(
         stickyChildren: [
           StickyWidget(
-            initialPosition: StickyPosition(top: 20, right: 20),
+            initialPosition: StickyPosition(top: 50, right: 20),
             finalPosition: StickyPosition(top: 20, right: 20),
             controller: _singleChildScrollViewController,
-            child: UserAvatarMenuWidget(),
+            child: const UserAvatarMenuWidget(),
           ),
         ],
         child: SingleChildScrollView(
           controller: _singleChildScrollViewController,
-          padding: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
-          child: Stack(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 96),
-                child: FutureBuilder(
-                  future: _operatorService.getOperatorFiltered(
-                    activities: selectedFilters,
-                  ),
-                  builder: (
-                    BuildContext context,
-                    AsyncSnapshot<List<Operator>> snapshot,
-                  ) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return SizedBox(
-                        height: MediaQuery.of(context).size.height - 200,
-                        child: const Center(child: CircularProgressIndicator()),
-                      );
-                    } else if (snapshot.hasError) {
-                      logger.e('Error loading map markers: ${snapshot.error}');
-                      return const Center(child: Text('Error loading data'));
-                    } else if (snapshot.hasData) {
-                      return Column(
-                        children: [
-                          SizedBox(
-                            height: 80.0,
-                            child: StickyContainer(
-                              stickyChildren: [
-                                StickyWidget(
-                                  initialPosition: StickyPosition(
-                                    top: 23,
-                                    right: 0,
-                                  ),
-                                  finalPosition: StickyPosition(
-                                    top: 23,
-                                    right: 0,
-                                  ),
-                                  controller: _listViewController,
-                                  child: SizedBox(
-                                    width: 40,
-                                    height: 35,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.all(0.0),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          side: BorderSide(
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            width: 2,
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: _overlayController.toggle,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.filter_alt),
-                                          OverlayPortal(
-                                            controller: _overlayController,
-                                            overlayChildBuilder: (
-                                              BuildContext context,
-                                            ) {
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 24.0,
-                                                      vertical: 128,
-                                                    ),
-
-                                                child: FilterCard(
-                                                  filterValues:
-                                                      snapshot.data!
-                                                          .expand(
-                                                            (op) =>
-                                                                op.activities ??
-                                                                const <
-                                                                  Activity
-                                                                >[],
-                                                          )
-                                                          .map(
-                                                            (activity) =>
-                                                                activity.name,
-                                                          )
-                                                          .toSet()
-                                                          .toList(),
-                                                  filters: selectedFilters,
-                                                  onConfirm: _onConfirmFilters,
-                                                  onCancel:
-                                                      () =>
-                                                          _overlayController
-                                                              .hide(),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 48.0),
-                                child: ListView(
-                                  controller: _listViewController,
-                                  scrollDirection: Axis.horizontal,
-                                  children:
-                                      snapshot.data!
-                                          .expand(
-                                            (op) =>
-                                                op.activities ??
-                                                const <Activity>[],
-                                          )
-                                          .map((activity) => activity.name)
-                                          .toSet()
-                                          .map((activity) {
-                                            return Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 3.0,
-                                                  ),
-                                              child: FilterChip(
-                                                label: Text(activity),
-                                                selected: selectedFilters
-                                                    .contains(activity),
-                                                onSelected: (bool selected) {
-                                                  setState(() {
-                                                    if (selected) {
-                                                      selectedFilters.add(
-                                                        activity,
-                                                      );
-                                                    } else {
-                                                      selectedFilters.remove(
-                                                        activity,
-                                                      );
-                                                    }
-                                                  });
-                                                },
-                                              ),
-                                            );
-                                          })
-                                          .toList(),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Column(
-                            spacing: 16,
-                            children:
-                                snapshot.data!
-                                    .map(
-                                      (op) => GeneralOperatorCardWidget(
-                                        title: op.name,
-                                        onClick:
-                                            () => Navigator.of(
-                                              context,
-                                            ).push(_createRoute(op.id)),
-                                        subtitle: op.description,
-                                        phone: op.phone,
-                                        email: op.email,
-                                        website: op.website,
-                                        activities: op.activities,
-                                        zones: op.zones,
-                                      ),
-                                    )
-                                    .toList(),
-                          ),
-                        ],
-                      );
-                    }
-                    return const Center(child: Text('No data available.'));
-                  },
+              const SizedBox(height: 80),
+              const Text(
+                "Operatori",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.brown,
                 ),
+              ),
+              const Text(
+                "Trova i migliori professionisti per le tue escursioni",
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 32),
+
+              // Toolbar Filtri
+              FutureBuilder<List<Operator>>(
+                future: _allOperatorsInitialFuture,
+                builder: (context, snapshot) {
+                  // Se non ci sono dati, mostriamo una barra vuota o un caricamento leggero
+                  if (!snapshot.hasData) return const SizedBox(height: 50);
+
+                  // Estraiamo tutte le attività disponibili dai dati
+                  final  allActivities =
+                      snapshot.data!
+                          .expand((op) => op.activities ?? [])
+                          .map((a) => a.name as String)
+                          .toSet()
+                          .toList();
+
+                  return Row(
+                    children: [
+                      // PARTE SINISTRA: CHIP SCORREVOLI
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children:
+                                allActivities.map((activity) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: FilterChip(
+                                      label: Text(activity),
+                                      selected: selectedFilters.contains(
+                                        activity,
+                                      ),
+                                      onSelected:
+                                          (val) => setState(() {
+                                            val
+                                                ? selectedFilters.add(activity)
+                                                : selectedFilters.remove(
+                                                  activity,
+                                                );
+                                          }),
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // PARTE DESTRA: BOTTONE OVERLAY
+                      IconButton.filled(
+                        onPressed: _overlayController.toggle,
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.brown,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        // Passiamo lo snapshot.data qui dentro
+                        icon: OverlayPortal(
+                          controller: _overlayController,
+                          overlayChildBuilder:
+                              (ctx) => _buildFilterOverlay(allActivities),
+                          child: const Icon(
+                            Icons.filter_list,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // Lista Operatori
+              FutureBuilder<List<Operator>>(
+                future: _operatorService.getOperatorFiltered(
+                  activities: selectedFilters,
+                ),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text("Nessun operatore trovato"),
+                    );
+                  }
+
+                  return Column(
+                    children:
+                        snapshot.data!
+                            .map(
+                              (op) => GeneralOperatorCardWidget(
+                                title: op.name,
+                                subtitle: op.description,
+                                phone: op.phone,
+                                email: op.email,
+                                website: op.website,
+                                activities: op.activities,
+                                zones: op.zones,
+                                onClick:
+                                    () => Navigator.of(
+                                      context,
+                                    ).push(_createRoute(op.id)),
+                              ),
+                            )
+                            .toList(),
+                  );
+                },
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: NavBar(index: 1),
+      bottomNavigationBar: const NavBar(index: 1),
+    );
+  }
+
+  Widget _buildFilterOverlay(List<String> data) {
+
+    return Container(
+      color: Colors.black54,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(24),
+      child: FilterCard(
+        filterValues: data,
+        filters: selectedFilters,
+        onConfirm: () {
+          setState(() {});
+          _overlayController.hide();
+        },
+        onCancel: _overlayController.hide,
+      ),
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/enums.dart';
-import 'package:flutter_application/models/operator.dart';
 import 'package:flutter_application/services/domain/operator.service.dart';
 import 'package:flutter_application/widgets/contact/detailsoperatorcard.dart';
 import 'package:flutter_application/widgets/contact/operatorgallery.dart';
@@ -9,7 +8,6 @@ import 'dart:math' as math;
 
 class OperatorDetails extends StatefulWidget {
   const OperatorDetails({super.key, required this.id});
-
   final int id;
 
   @override
@@ -21,14 +19,9 @@ class _OperatorDetailsState extends State<OperatorDetails> {
   final _operatorService = OperatorService();
   final Logger logger = Logger();
   late final ScrollController _scrollController;
-  final List<String> _galleryImages = [
-    'https://picsum.photos/200',
-    'https://picsum.photos/200',
-    'https://picsum.photos/200',
-    'https://picsum.photos/200',
-    'https://picsum.photos/200',
-    'https://picsum.photos/200',
-  ];
+  
+  // Immagini di esempio (da sostituire con i dati reali dell'operatore)
+  final List<String> _galleryImages = List.generate(6, (index) => 'https://picsum.photos/seed/${index + 123}/600/400');
 
   @override
   void initState() {
@@ -42,383 +35,172 @@ class _OperatorDetailsState extends State<OperatorDetails> {
     super.dispose();
   }
 
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-  }
-
   void _openGallery(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return GalleryDialog(images: _galleryImages);
-      },
-    );
+    showDialog(context: context, builder: (context) => GalleryDialog(images: _galleryImages));
   }
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.sizeOf(context).width;
     return Scaffold(
-      body: Column(
-        spacing: 8,
-        children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-            child: Row(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.brown, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text("DETTAGLI OPERATORE", 
+          style: TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.2)),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () => setState(() => _isFavorite = !_isFavorite),
+            icon: Icon(_isFavorite ? Icons.favorite : Icons.favorite_border, 
+              color: _isFavorite ? Colors.red : Colors.brown),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: FutureBuilder(
+        future: _operatorService.getOperatorById(widget.id),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError || !snapshot.hasData) return const Center(child: Text("Errore nel caricamento"));
+
+          final op = snapshot.data!;
+          return SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                const SizedBox(height: 10),
+                DetailsOperatorCardWidget(
+                  title: op.name,
+                  subtitle: op.description,
+                  phone: op.phone,
+                  email: op.email,
+                  website: op.website,
+                  image: 'https://picsum.photos/seed/${op.id}/200',
+                  rate: 4.8,
+                  ratings: 156,
+                  availability: OperatorAvailability.available,
                 ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      "Operator Details",
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineSmall!.copyWith(
-                        color: Colors.brown,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                
+                const SizedBox(height: 32),
+                _buildSectionTitle("Attività"),
+                _buildChips(op.activities?.map((a) => a.name).toList() ?? [], isActivity: true),
+                
+                const SizedBox(height: 32),
+                _buildSectionTitle("Zone Operative"),
+                _buildChips(op.zones?.map((z) => z.name).toList() ?? [], isActivity: false),
+                
+                const SizedBox(height: 32),
+                _buildSectionTitle("Galleria"),
+                _buildGalleryGrid(context),
+                
+                const SizedBox(height: 40),
+                _buildBookingAction(context),
+                const SizedBox(height: 40),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Text(title.toUpperCase(), 
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: Colors.brown)),
+    );
+  }
+
+  Widget _buildChips(List<String> items, {required bool isActivity}) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: items.map((item) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: isActivity ? Colors.brown.withOpacity(0.05) : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isActivity ? Colors.brown.withOpacity(0.1) : Colors.transparent),
+          ),
+          child: Text(item, style: TextStyle(
+            color: isActivity ? Colors.brown : Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          )),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildGalleryGrid(BuildContext context) {
+    int displayCount = math.min(_galleryImages.length, 4);
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.4,
+      ),
+      itemCount: displayCount,
+      itemBuilder: (context, index) {
+        bool isLast = index == 3 && _galleryImages.length > 4;
+        return GestureDetector(
+          onTap: () => _openGallery(context),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(_galleryImages[index], fit: BoxFit.cover),
+                if (isLast)
+                  Container(
+                    color: Colors.black54,
+                    alignment: Alignment.center,
+                    child: Text("+${_galleryImages.length - 4}", 
+                      style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
                   ),
-                ),
-                CircleAvatar(
-                  child: IconButton(
-                    onPressed: () => _toggleFavorite(),
-                    icon: Icon(
-                      Icons.favorite_outline,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    isSelected: _isFavorite,
-                    selectedIcon: Icon(
-                      Icons.favorite,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
-          Expanded(
-            child: FutureBuilder(
-              future: _operatorService.getOperatorById(widget.id),
-              builder: (
-                BuildContext context,
-                AsyncSnapshot<Operator?> snapshot,
-              ) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  logger.e('Error loading map markers: ${snapshot.error}');
-                  return const Center(child: Text('Error loading data'));
-                } else if (snapshot.hasData) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: SingleChildScrollView(
-                      controller: _scrollController,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 24,
-                        children: [
-                          DetailsOperatorCardWidget(
-                            title: snapshot.data!.name,
-                            subtitle: snapshot.data!.description,
-                            phone: snapshot.data!.phone,
-                            email: snapshot.data!.email,
-                            website: snapshot.data!.website,
-                            image: 'https://picsum.photos/200',
-                            rate: 4.5,
-                            ratings: 128,
-                            availability: OperatorAvailability.busy,
-                          ),
-                          if (snapshot.data!.activities != null)
-                            Column(
-                              spacing: 12,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Activities',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineSmall!.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+        );
+      },
+    );
+  }
 
-                                Wrap(
-                                  children: [
-                                    ...snapshot.data!.activities!.map((
-                                      activity,
-                                    ) {
-                                      // Genera un colore di background pastello chiaro
-                                      final hue =
-                                          math.Random().nextDouble() * 360;
-                                      final backgroundColor =
-                                          HSLColor.fromAHSL(
-                                            1.0,
-                                            hue,
-                                            0.5,
-                                            0.85,
-                                          ).toColor();
-
-                                      final textColor =
-                                          HSLColor.fromColor(backgroundColor)
-                                              .withLightness(
-                                                (HSLColor.fromColor(
-                                                          backgroundColor,
-                                                        ).lightness *
-                                                        0.5)
-                                                    .clamp(0.0, 1.0),
-                                              )
-                                              .toColor();
-
-                                      return Container(
-                                        margin: const EdgeInsets.all(6.0),
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 8.0,
-                                          horizontal: 14.0,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: backgroundColor,
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          activity.name,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium!.copyWith(
-                                            color: textColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ],
-                            ),
-
-                          if (snapshot.data!.zones != null)
-                            Column(
-                              spacing: 12,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Zones Covered',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineSmall!.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-
-                                Wrap(
-                                  children: [
-                                    ...snapshot.data!.zones!.map((zone) {
-                                      // Genera un colore di background pastello chiaro
-                                      final backgroundColor =
-                                          const Color.fromARGB(
-                                            255,
-                                            235,
-                                            235,
-                                            235,
-                                          );
-
-                                      final textColor = const Color.fromARGB(
-                                        255,
-                                        79,
-                                        79,
-                                        79,
-                                      );
-
-                                      return Container(
-                                        margin: const EdgeInsets.all(6.0),
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 8.0,
-                                          horizontal: 14.0,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: backgroundColor,
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          zone.name,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium!.copyWith(
-                                            color: textColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ],
-                            ),
-
-                          Column(
-                            spacing: 12,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Gallery',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall!.copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              Builder(
-                                builder: (context) {
-                                  if (_galleryImages.isEmpty) {
-                                    return const SizedBox.shrink();
-                                  }
-
-                                  final int displayCount = math.min(
-                                    _galleryImages.length,
-                                    4,
-                                  );
-
-                                  return GridView.builder(
-                                    padding: EdgeInsets.zero,
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 2,
-                                          crossAxisSpacing: 12,
-                                          mainAxisSpacing: 12,
-                                          childAspectRatio: 1.3,
-                                        ),
-                                    itemCount: displayCount,
-                                    itemBuilder: (context, index) {
-                                      final String imageUrl =
-                                          _galleryImages[index];
-
-                                      final bool isOverflowCell =
-                                          index == 3 &&
-                                          _galleryImages.length > 4;
-                                      final int remainingCount =
-                                          _galleryImages.length - 4;
-
-                                      return GestureDetector(
-                                        onTap:
-                                            () => {
-                                              if (isOverflowCell)
-                                                _openGallery(context),
-                                            },
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            16.0,
-                                          ),
-                                          child: Stack(
-                                            fit: StackFit.expand,
-                                            children: [
-                                              Image.network(
-                                                imageUrl,
-                                                fit: BoxFit.cover,
-                                                errorBuilder:
-                                                    (_, __, ___) =>
-                                                        const Center(
-                                                          child: Icon(
-                                                            Icons.error,
-                                                          ),
-                                                        ),
-                                              ),
-
-                                              if (isOverflowCell)
-                                                Container(
-                                                  color: Colors.black
-                                                      .withValues(alpha: .4),
-                                                  alignment: Alignment.center,
-                                                  child: Text(
-                                                    '+$remainingCount',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 24,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Column(
-                              spacing: 6,
-                              children: [
-                                SizedBox(
-                                  width: width,
-                                  child: FilledButton.icon(
-                                    onPressed: () => {},
-                                    label: Text(
-                                      'Book an Excursion',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .copyWith(color: Colors.white),
-                                    ),
-                                    icon: const Icon(Icons.calendar_month_outlined),
-                                    style: FilledButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 24,
-                                        horizontal: 32,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(12),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Text('Free cancellation up to 24h before',
-                                style: Theme.of(context).textTheme.labelLarge!.copyWith(color: Colors.grey[600]),)
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                return const Center(child: Text('No data available.'));
-              },
+  Widget _buildBookingAction(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 60,
+          child: FilledButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.calendar_today_rounded, size: 20),
+            label: const Text("PRENOTA ESCURSIONE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.brown,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 12),
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.verified_user_outlined, size: 14, color: Colors.green),
+            SizedBox(width: 6),
+            Text("Cancellazione gratuita fino a 24h prima", style: TextStyle(color: Colors.grey, fontSize: 13)),
+          ],
+        ),
+      ],
     );
   }
 }

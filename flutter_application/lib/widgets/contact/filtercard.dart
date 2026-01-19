@@ -1,111 +1,112 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sticky_widgets/flutter_sticky_widgets.dart';
 
 class FilterCard extends StatefulWidget {
   const FilterCard({
     super.key,
-    required this.filterValues,
-    required this.filters,
+    required this.filterValues, // Questa deve essere la lista TOTALE
+    required this.filters,      // Questi sono quelli selezionati
     required this.onConfirm,
     this.onCancel,
   });
 
   final List<String> filterValues;
   final List<String> filters;
-  final Function() onConfirm;
-  final Function()? onCancel;
+  final VoidCallback onConfirm;
+  final VoidCallback? onCancel;
 
   @override
   State<FilterCard> createState() => _FilterCardState();
 }
 
 class _FilterCardState extends State<FilterCard> {
-  late final ScrollController _controller;
-
-  @override
-  void initState() {
-    _controller = ScrollController();
-
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final maxHeight = MediaQuery.of(context).size.height * 0.7;
 
-    return Card(
-      child: StickyContainer(
-        stickyChildren: [
-          StickyWidget(
-            initialPosition: StickyPosition(left: width / 2 - 80, bottom: 20),
-            finalPosition: StickyPosition(left: width / 2 - 80, bottom: 20),
-            controller: _controller,
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: Colors.black26, blurRadius: 40, offset: const Offset(0, 10))
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // --- HEADER CON TASTO RESET ---
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Filtra attività", 
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.brown)
+              ),
+              Row(
+                children: [
+                  // TASTO RESET: Utile se l'utente si incastra
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.filters.clear();
+                      });
+                    },
+                    child: const Text("Pulisci", style: TextStyle(color: Colors.brown)),
+                  ),
+                  if (widget.onCancel != null)
+                    IconButton(icon: const Icon(Icons.close), onPressed: widget.onCancel),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // --- BODY ---
+          Flexible(
+            child: widget.filterValues.isEmpty 
+              ? const Center(child: Text("Nessuna attività disponibile"))
+              : SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: widget.filterValues.map((activity) {
+                      final isSelected = widget.filters.contains(activity);
+                      return FilterChip(
+                        label: Text(activity),
+                        selected: isSelected,
+                        selectedColor: Colors.brown.shade100,
+                        checkmarkColor: Colors.brown,
+                        onSelected: (bool selected) {
+                          setState(() {
+                            selected 
+                              ? widget.filters.add(activity) 
+                              : widget.filters.remove(activity);
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+          ),
+
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 55,
             child: FilledButton(
               onPressed: widget.onConfirm,
-              child: const Text('Confirm'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.brown,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: const Text("CONFERMA", style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
-        child: SingleChildScrollView(
-          controller: _controller,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              spacing: 24,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Filter by activity',
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                    if (widget.onCancel != null)
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: widget.onCancel,
-                        iconSize: 24,
-                      ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children:
-                        widget.filterValues
-                            .map(
-                              (activity) => FilterChip(
-                                label: Text(activity),
-                                selected: widget.filters.contains(activity),
-                                onSelected: (bool selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      widget.filters.add(activity);
-                                    } else {
-                                      widget.filters.remove(activity);
-                                    }
-                                  });
-                                },
-                              ),
-                            )
-                            .toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
