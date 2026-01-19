@@ -42,7 +42,8 @@ class OperatorCreate(OperatorBase):
     pass 
 
 class OperatorPublic(OperatorBase):
-    id: int 
+    id: int
+    is_favorite: bool = False 
 
 class OperatorPublicWithDetails(OperatorPublic):
     activities: List["ActivityPublic"] = []

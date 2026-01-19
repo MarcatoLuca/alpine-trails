@@ -3,22 +3,28 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 
 from app.database import get_session
+from app.user.models import User
+from app.user.router import get_current_user
+
 # Importiamo i modelli dal nostro file pulito
 from . import models
 
 router = APIRouter(
     prefix="/map_markers",
-    tags=["Map Markers"], # Plurale è più comune per i tag
+    tags=["Map Markers"],  # Plurale è più comune per i tag
 )
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
 @router.get("/", response_model=List[models.MapMarkerPublic])
-def get_all_map_markers(session: SessionDep):
+def get_all_map_markers(
+    session: SessionDep,
+    current_user: Annotated[User, Depends(get_current_user)],
+):
     """
     Recupera tutti i punti di interesse sulla mappa.
     """
     map_markers = session.exec(select(models.MapMarker)).all()
-    
+
     return map_markers

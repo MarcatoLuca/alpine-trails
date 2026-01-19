@@ -8,7 +8,7 @@ from app.user.router import get_current_user
 from . import models
 from app.activity.models import Activity
 from app.zone.models import Zone
-from app.user.models import User 
+from app.user.models import User
 
 router = APIRouter(
     prefix="/operators",
@@ -21,6 +21,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 @router.get("/", response_model=List[models.OperatorPublicWithDetails])
 def get_all_operators(  # Nome funzione al plurale
     session: SessionDep,
+    current_user: Annotated[User, Depends(get_current_user)],
     name: Optional[str] = Query(default=None),
     zone_name: Optional[str] = Query(default=None),
     activity_names: Optional[List[str]] = Query(default=None),
@@ -36,7 +37,8 @@ def get_all_operators(  # Nome funzione al plurale
     )
 
     if name:
-        statement = statement.where(models.Operator.name.ilike(f"%{name}%"))
+        statement = statement.where(models.Operator.
+        name.ilike(f"%{name}%"))
     if zone_name:
         statement = statement.where(models.Operator.zones.any(Zone.name == zone_name))
     if activity_names:
@@ -48,14 +50,23 @@ def get_all_operators(  # Nome funzione al plurale
     statement = statement.order_by(models.Operator.id).offset(skip).limit(limit)
 
     operators = session.exec(statement).all()
+    operators_public = []
 
-    return operators
+    for operator in operators:
+        operator_data = models.OperatorPublicWithDetails.model_validate(operator)
+        operator_data.is_favorite = any(
+            fav.id == operator.id for fav in current_user.favorite_operators
+        )
+        operators_public.append(operator_data)
+
+    return operators_public
 
 
 @router.get("/{operator_id}", response_model=models.OperatorPublicWithDetails)
 def get_operator_by_id(
     operator_id: int,
     session: SessionDep,
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
     """
     Recupera un singolo operatore tramite ID, con le sue attività e zone.
@@ -75,28 +86,32 @@ def get_operator_by_id(
             status_code=404, detail=f"Operator with id {operator_id} not found"
         )
 
-    return operator
+    operators_public = models.OperatorPublicWithDetails.model_validate(operator)
 
-@router.get("/favorites/", response_model=List[models.OperatorPublic])
+    operators_public.is_favorite = any(
+        fav.id == operator_id for fav in current_user.favorite_operators
+    )
+
+    return operators_public
+
+
+@router.get("/favorites/", response_model=List[int])
 def get_favorite_operators(
     session: SessionDep,
-    current_user: Annotated[
-        "User", Depends(get_current_user)
-    ],
+    current_user: Annotated["User", Depends(get_current_user)],
 ):
     """
     Recupera la lista degli operatori preferiti dell'utente corrente.
     """
     session.refresh(current_user)  # Assicurati che le relazioni siano caricate
-    return current_user.favorite_operators
+    return [op.id for op in current_user.favorite_operators]
+
 
 @router.post("/favorites/{operator_id}", response_model=models.OperatorPublic)
 def add_favorite_operator(
     operator_id: int,
     session: SessionDep,
-    current_user: Annotated[
-        "User", Depends(get_current_user)
-    ],
+    current_user: Annotated["User", Depends(get_current_user)],
 ):
     """
     Aggiunge un operatore ai preferiti dell'utente corrente.
@@ -117,13 +132,12 @@ def add_favorite_operator(
 
     return operator
 
+
 @router.delete("/favorites/{operator_id}", response_model=models.OperatorPublic)
 def remove_favorite_operator(
     operator_id: int,
     session: SessionDep,
-    current_user: Annotated[
-        "User", Depends(get_current_user)
-    ],
+    current_user: Annotated["User", Depends(get_current_user)],
 ):
     """
     Rimuove un operatore dai preferiti dell'utente corrente.
