@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/models/user.dart';
 import 'package:flutter_application/providers/api_client.dart';
 import 'package:flutter_application/providers/auth_events.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -12,7 +13,7 @@ class AuthService with ChangeNotifier {
   final _apiClient = ApiClient();
 
   bool _isLoggedIn = false;
-  Map<String, dynamic>? _userData;
+  User? _userData;
 
   AuthService() {
     AuthEvents.onLogout.listen((_) {
@@ -22,7 +23,7 @@ class AuthService with ChangeNotifier {
   }
 
   bool get isLoggedIn => _isLoggedIn;
-  Map<String, dynamic>? get userData => _userData;
+  User? get userData => _userData;
 
   Future<void> tryAutoLogin() async {
     try {
@@ -73,7 +74,7 @@ class AuthService with ChangeNotifier {
       final response = await _apiClient.get('/user/me');
 
       if (response.statusCode == 200) {
-        _userData = response.data;
+        _userData = User.fromJson(response.data);
         return true;
       }
       return false;
@@ -138,6 +139,52 @@ class AuthService with ChangeNotifier {
       }
     } on DioException catch (e) {
       logger.e('Errore di login: ${e.response?.data}');
+      rethrow;
+    }
+  }
+
+  Future<void> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '/user/',
+        data: {
+          'first_name': firstName,
+          'last_name': lastName,
+          'email': email,
+          'password': password,
+        },
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        logger.i('Registrazione completata con successo.');
+
+        if (response.data['access_token'] != null) {
+          final accessToken = response.data['access_token'];
+          final refreshToken = response.data['refresh_token'];
+
+          await _storage.write(key: 'access_token', value: accessToken);
+          await _storage.write(key: 'refresh_token', value: refreshToken);
+
+          _isLoggedIn = true;
+          await fetchUserProfile();
+          notifyListeners();
+        } else {
+          logger.i(
+            'Token non presenti nella risposta. Eseguo il login automatico...',
+          );
+          await login(email, password);
+        }
+      }
+    } on DioException catch (e) {
+      logger.e('Errore durante la registrazione: ${e.response?.data}');
+      rethrow;
+    } catch (e) {
+      logger.e('Errore generico durante la registrazione: $e');
       rethrow;
     }
   }

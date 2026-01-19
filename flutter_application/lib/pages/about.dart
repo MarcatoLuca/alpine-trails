@@ -1,16 +1,82 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application/services/email_service.dart';
 import 'package:flutter_application/widgets/about/contactform.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/navbar.dart';
 
-class AboutPage extends StatelessWidget {
-  AboutPage({super.key});
+class AboutPage extends StatefulWidget {
+  const AboutPage({super.key});
 
+  @override
+  State<AboutPage> createState() => _AboutPageState();
+}
+
+class _AboutPageState extends State<AboutPage> {
   final EmailService emailService = EmailService();
   final contactFormKey = GlobalKey();
+  final MapController _mapController = MapController();
+
+  StreamSubscription<Position>? _positionStream;
+  LatLng _currentLatLng = const LatLng(41.9028, 12.4964);
+  bool _isTracking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startLocationTracking();
+  }
+
+  @override
+  void dispose() {
+    // IMPORTANTE: fermare il GPS quando si esce dalla pagina
+    _positionStream?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _startLocationTracking() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Controllo se il GPS è attivo
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    // Gestione permessi
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+
+    if (permission == LocationPermission.deniedForever) return;
+
+    // Avvio lo stream di posizione
+    const locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 3, // Aggiorna ogni 3 metri
+    );
+
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: locationSettings,
+    ).listen((Position position) {
+      if (!mounted) return;
+
+      final newLatLng = LatLng(position.latitude, position.longitude);
+
+      setState(() {
+        _currentLatLng = newLatLng;
+        _isTracking = true;
+      });
+
+      // Sposta la mappa automaticamente sulla nuova posizione
+      _mapController.move(newLatLng, 15.0);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,8 +124,13 @@ class AboutPage extends StatelessWidget {
                       icon: const Icon(Icons.keyboard_arrow_down),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.brown,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                     ),
                   ),
@@ -107,7 +178,11 @@ class AboutPage extends StatelessWidget {
                     value: 'support@alpinetrails.com',
                     color: Colors.brown,
                     onTap: () {
-                      emailService.sendEmail('Richiesta Informazioni', '', emailTo: 'support@alpinetrails.com');
+                      emailService.sendEmail(
+                        'Richiesta Informazioni',
+                        '',
+                        emailTo: 'support@alpinetrails.com',
+                      );
                     },
                   ),
                   const SizedBox(height: 12),
@@ -133,17 +208,31 @@ class AboutPage extends StatelessWidget {
                   height: 300,
                   decoration: BoxDecoration(color: Colors.grey.shade200),
                   child: FlutterMap(
-                    options: const MapOptions(
-                      initialCenter: LatLng(46.433334, 11.850000),
-                      initialZoom: 12,
+                    mapController: _mapController,
+                    options: MapOptions(
+                      initialCenter: _currentLatLng,
+                      initialZoom: 13.0,
                     ),
                     children: [
-                      TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
-                      const MarkerLayer(
+                      // 1. Il layer della mappa (OpenStreetMap)
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.app',
+                      ),
+
+                      // 2. Il layer del Marker (la tua posizione)
+                      MarkerLayer(
                         markers: [
                           Marker(
-                            point: LatLng(46.433334, 11.850000),
-                            child: Icon(Icons.location_pin, size: 40, color: Colors.blue),
+                            point: _currentLatLng,
+                            width: 60,
+                            height: 60,
+                            child: const Icon(
+                              Icons.location_history,
+                              color: Colors.blue,
+                              size: 40,
+                            ),
                           ),
                         ],
                       ),
@@ -159,10 +248,22 @@ class AboutPage extends StatelessWidget {
               description: 'Alpine Trails offre:',
               child: Column(
                 children: [
-                  _buildInfoItem(Icons.map_outlined, 'Guide dettagliate per varie attività all\'aperto'),
-                  _buildInfoItem(Icons.backpack_outlined, 'Consigli su attrezzatura e equipaggiamento'),
-                  _buildInfoItem(Icons.wb_sunny_outlined, 'Aggiornamenti meteo in tempo reale'),
-                  _buildInfoItem(Icons.health_and_safety_outlined, 'Suggerimenti sulla sicurezza e buone pratiche'),
+                  _buildInfoItem(
+                    Icons.map_outlined,
+                    'Guide dettagliate per varie attività all\'aperto',
+                  ),
+                  _buildInfoItem(
+                    Icons.backpack_outlined,
+                    'Consigli su attrezzatura e equipaggiamento',
+                  ),
+                  _buildInfoItem(
+                    Icons.wb_sunny_outlined,
+                    'Aggiornamenti meteo in tempo reale',
+                  ),
+                  _buildInfoItem(
+                    Icons.health_and_safety_outlined,
+                    'Suggerimenti sulla sicurezza e buone pratiche',
+                  ),
                 ],
               ),
             ),
@@ -170,13 +271,26 @@ class AboutPage extends StatelessWidget {
             // --- CONSIGLI UTILI ---
             _buildSectionContainer(
               title: 'Consigli Utili',
-              description: 'Le nostre principali raccomandazioni per la tua sicurezza:',
+              description:
+                  'Le nostre principali raccomandazioni per la tua sicurezza:',
               child: Column(
                 children: [
-                  _buildInfoItem(Icons.cloud_sync_outlined, 'Controlla sempre le previsioni del tempo prima di uscire'),
-                  _buildInfoItem(Icons.check_circle_outline, 'Assicurati di avere l\'attrezzatura e le provviste necessarie'),
-                  _buildInfoItem(Icons.info_outline, 'Familiarizza con le procedure e i contatti di emergenza'),
-                  _buildInfoItem(Icons.nature_people_outlined, 'Rispetta la natura e segui i principi "Leave No Trace"'),
+                  _buildInfoItem(
+                    Icons.cloud_sync_outlined,
+                    'Controlla sempre le previsioni del tempo prima di uscire',
+                  ),
+                  _buildInfoItem(
+                    Icons.check_circle_outline,
+                    'Assicurati di avere l\'attrezzatura e le provviste necessarie',
+                  ),
+                  _buildInfoItem(
+                    Icons.info_outline,
+                    'Familiarizza con le procedure e i contatti di emergenza',
+                  ),
+                  _buildInfoItem(
+                    Icons.nature_people_outlined,
+                    'Rispetta la natura e segui i principi "Leave No Trace"',
+                  ),
                 ],
               ),
             ),
@@ -184,13 +298,17 @@ class AboutPage extends StatelessWidget {
             // --- FORM DI RICHIESTA (Inserito in un riquadro visibile) ---
             _buildSectionContainer(
               title: 'Richiedi Informazioni',
-              description: 'Hai domande? Inviaci la tua richiesta direttamente. Il nostro team è qui per aiutarti.',
+              description:
+                  'Hai domande? Inviaci la tua richiesta direttamente. Il nostro team è qui per aiutarti.',
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade50,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.brown.withValues(alpha: 0.2), width: 1.5),
+                  border: Border.all(
+                    color: Colors.brown.withValues(alpha: 0.2),
+                    width: 1.5,
+                  ),
                 ),
                 child: ContactFormWidget(key: contactFormKey),
               ),
@@ -202,7 +320,9 @@ class AboutPage extends StatelessWidget {
               child: Text(
                 'Grazie per aver scelto Alpine Trails per le tue avventure nelle Dolomiti. Ti auguriamo un\'esperienza indimenticabile!',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
             const SizedBox(height: 40),
@@ -220,20 +340,34 @@ class AboutPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
       ),
     );
   }
 
-  Widget _buildSectionContainer({required String title, required String description, required Widget child}) {
+  Widget _buildSectionContainer({
+    required String title,
+    required String description,
+    required Widget child,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
-          Text(description, style: const TextStyle(fontSize: 15, color: Colors.black54)),
+          Text(
+            description,
+            style: const TextStyle(fontSize: 15, color: Colors.black54),
+          ),
           const SizedBox(height: 16),
           child,
         ],
@@ -241,7 +375,14 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactTile(BuildContext context, {required IconData icon, required String label, required String value, required Color color, required VoidCallback onTap}) {
+  Widget _buildContactTile(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -260,12 +401,30 @@ class AboutPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54)),
-                  Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 14, color: color.withValues(alpha: 0.5)),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: color.withValues(alpha: 0.5),
+            ),
           ],
         ),
       ),
@@ -280,7 +439,12 @@ class AboutPage extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: Colors.brown.shade400),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 15, height: 1.4))),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 15, height: 1.4),
+            ),
+          ),
         ],
       ),
     );
