@@ -48,12 +48,20 @@ class _ExploreState extends State<Explore> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.brown, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.brown,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "ESPLORA",
-          style: TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+          style: TextStyle(
+            color: Colors.brown,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
         ),
         centerTitle: true,
       ),
@@ -80,7 +88,7 @@ class _ExploreState extends State<Explore> {
                       color: Colors.black.withOpacity(0.08),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
-                    )
+                    ),
                   ],
                 ),
                 child: ClipRRect(
@@ -88,7 +96,8 @@ class _ExploreState extends State<Explore> {
                   child: ExploreMapWidget(
                     mapMarkersFuture: _mapMarkersFuture,
                     mapController: _mapController,
-                    onMapMarkerTap: (ctx, marker) => handlePlaceSelection(ctx, marker),
+                    onMapMarkerTap:
+                        (ctx, marker) => handlePlaceSelection(ctx, marker),
                   ),
                 ),
               ),
@@ -99,18 +108,22 @@ class _ExploreState extends State<Explore> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             height: _selectedMapMarker == null ? 0 : 220,
-            child: _selectedMapMarker == null 
-              ? const SizedBox.shrink() 
-              : _buildDetailSection(theme),
+            child:
+                _selectedMapMarker == null
+                    ? const SizedBox.shrink()
+                    : _buildDetailSection(theme),
           ),
-          
-          if (_selectedMapMarker == null) 
+
+          if (_selectedMapMarker == null)
             const Padding(
               padding: EdgeInsets.all(32.0),
               child: Text(
                 "Tocca un segnaposto sulla mappa per vedere i dettagli",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
         ],
@@ -128,9 +141,15 @@ class _ExploreState extends State<Explore> {
       ),
       child: Autocomplete<String>(
         optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text == '') return const Iterable<String>.empty();
+          if (textEditingValue.text == '') {
+            return const Iterable<String>.empty();
+          }
           return _mapMarkers
-              .where((marker) => marker.name.toLowerCase().contains(textEditingValue.text.toLowerCase()))
+              .where(
+                (marker) => marker.name.toLowerCase().contains(
+                  textEditingValue.text.toLowerCase(),
+                ),
+              )
               .map((marker) => marker.name);
         },
         fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
@@ -163,7 +182,7 @@ class _ExploreState extends State<Explore> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15)
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15),
         ],
       ),
       child: Column(
@@ -178,11 +197,18 @@ class _ExploreState extends State<Explore> {
                   children: [
                     Text(
                       _selectedMapMarker!.name,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       _selectedMapMarker!.type.toUpperCase(),
-                      style: const TextStyle(fontSize: 11, color: Colors.brown, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.brown,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -190,12 +216,13 @@ class _ExploreState extends State<Explore> {
               IconButton(
                 onPressed: () => setState(() => _selectedMapMarker = null),
                 icon: const Icon(Icons.close, size: 20),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
-            _selectedMapMarker!.description ?? 'Nessuna descrizione disponibile.',
+            _selectedMapMarker!.description ??
+                'Nessuna descrizione disponibile.',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: Colors.black54),
@@ -207,11 +234,13 @@ class _ExploreState extends State<Explore> {
               onPressed: () {},
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.brown,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Text("VEDI DETTAGLI"),
             ),
-          )
+          ),
         ],
       ),
     );

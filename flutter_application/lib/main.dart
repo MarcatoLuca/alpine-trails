@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/app.dart';
 import 'package:flutter_application/providers/pagenotifier.dart';
+import 'package:flutter_application/services/activity_service.dart';
 import 'package:flutter_application/services/domain/auth.service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,9 +26,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<PageNotifier>(
           create: (context) => PageNotifier(),
         ),
-        ChangeNotifierProvider<AuthService>(
-          create: (context) => AuthService(),
-        ),
+        ChangeNotifierProvider<AuthService>(create: (context) => AuthService()),
+        ChangeNotifierProvider(create: (_) => ActivityService()),
       ],
       child: const App(),
     );

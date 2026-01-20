@@ -20,6 +20,11 @@ class ExploreMapWidget extends StatelessWidget {
   final Logger logger = Logger();
   final LatLng mapCenter = LatLng(46.433334, 11.850000); // Example coordinates
 
+  final LatLngBounds dolomitesBounds = LatLngBounds(
+    LatLng(46.20, 11.50),
+    LatLng(46.80, 12.60),
+  );
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<MapMarker>>(
@@ -41,6 +46,9 @@ class ExploreMapWidget extends StatelessWidget {
                   options: MapOptions(
                     initialCenter: mapCenter,
                     initialZoom: 12,
+                    cameraConstraint: CameraConstraint.contain(
+                      bounds: dolomitesBounds,
+                    ),
                   ),
                   children: [
                     TileLayer(

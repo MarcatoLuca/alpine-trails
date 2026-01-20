@@ -22,8 +22,13 @@ class _AboutPageState extends State<AboutPage> {
   final MapController _mapController = MapController();
 
   StreamSubscription<Position>? _positionStream;
-  LatLng _currentLatLng = const LatLng(41.9028, 12.4964);
+  LatLng _currentLatLng = const LatLng(46.433334, 11.850000);
   bool _isTracking = false;
+
+  final LatLngBounds dolomitesBounds = LatLngBounds(
+    LatLng(46.20, 11.50),
+    LatLng(46.80, 12.60),
+  );
 
   @override
   void initState() {
@@ -55,10 +60,9 @@ class _AboutPageState extends State<AboutPage> {
 
     if (permission == LocationPermission.deniedForever) return;
 
-    // Avvio lo stream di posizione
     const locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
-      distanceFilter: 3, // Aggiorna ogni 3 metri
+      distanceFilter: 3,
     );
 
     _positionStream = Geolocator.getPositionStream(
@@ -73,9 +77,16 @@ class _AboutPageState extends State<AboutPage> {
         _isTracking = true;
       });
 
-      // Sposta la mappa automaticamente sulla nuova posizione
-      _mapController.move(newLatLng, 15.0);
+      _checkIfUserWithinBounds(newLatLng);
     });
+  }
+
+  void _checkIfUserWithinBounds(LatLng position) {
+    if (dolomitesBounds.contains(position)) {
+      _mapController.move(position, 15.0);
+    } else {
+      _mapController.move(LatLng(46.433334, 11.850000), 15.0);
+    }
   }
 
   @override
@@ -212,6 +223,9 @@ class _AboutPageState extends State<AboutPage> {
                     options: MapOptions(
                       initialCenter: _currentLatLng,
                       initialZoom: 13.0,
+                      cameraConstraint: CameraConstraint.contain(
+                        bounds: dolomitesBounds,
+                      ),
                     ),
                     children: [
                       // 1. Il layer della mappa (OpenStreetMap)
@@ -229,7 +243,7 @@ class _AboutPageState extends State<AboutPage> {
                             width: 60,
                             height: 60,
                             child: const Icon(
-                              Icons.location_history,
+                              Icons.location_on,
                               color: Colors.blue,
                               size: 40,
                             ),
