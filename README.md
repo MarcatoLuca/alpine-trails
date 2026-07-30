@@ -1,45 +1,45 @@
 # Alpine Trails
 
-Panoramica
----------
+Overview
+--------
 
-Questo repository contiene due progetti integrati per gestire, servire e visualizzare dati relativi ad attività all'aperto e operatori locali:
+This repository contains two integrated projects for managing, serving, and visualizing data related to outdoor activities and local operators:
 
-- Il backend REST API: progetto `fastapi_service` (FastAPI, Python).
-- Il client multi-piattaforma: progetto `flutter_application` (Flutter, Dart).
+- The backend REST API: `fastapi_service` (FastAPI, Python).
+- The cross-platform client: `flutter_application` (Flutter, Dart).
 
-Scopo
-------
+Purpose
+-------
 
-Fornire una API solida per conservare e interrogare dati su operatori, zone, attività e utenti, e un'applicazione client che consenta agli utenti di esplorare mappe, visualizzare dettagli degli operatori, salvare preferiti e contattare i fornitori di servizi.
+Provide a reliable API for storing and querying data about operators, zones, activities and users, together with a client application that lets users explore maps, view operator details, save favorites, and contact service providers.
 
-Struttura del repository
-------------------------
+Repository layout
+-----------------
 
 - `fastapi_service/` — Backend
-	- Codice principale: `fastapi_service/app/`
-	- Dipendenze: `fastapi_service/requirements.txt`
-	- File principali: `main.py`, `database.py`, `dependencies.py`, `routers/`
-	- Script DB: `database/scripts/` contiene script SQL per popolare le tabelle.
+  - Main code: `fastapi_service/app/`
+  - Dependencies: `fastapi_service/requirements.txt`
+  - Key files: `main.py`, `database.py`, `dependencies.py`, `routers/`
+  - DB scripts: `database/scripts/` includes SQL for creating and populating tables.
 
-- `flutter_application/` — Client Flutter
-	- Codice principale: `flutter_application/lib/`
-	- Manifest dipendenze: `flutter_application/pubspec.yaml`
-	- Supporto per piattaforme: `android/`, `ios/`, `linux/`, `macos/`, `windows/`, `web/`
+- `flutter_application/` — Flutter client
+  - Main code: `flutter_application/lib/`
+  - Dependency manifest: `flutter_application/pubspec.yaml`
+  - Platform folders: `android/`, `ios/`, `linux/`, `macos/`, `windows/`, `web/`
 
-- `database/` — dump e script
-	- Backup/dump: `database/AT_22052025.bacpac`
-	- Script SQL: `database/scripts/*.sql` (creazione tabelle e popolamento)
+- `database/` — dumps and scripts
+  - Backup/dump: `database/AT_22052025.bacpac`
+  - SQL scripts: `database/scripts/*.sql` (schema and sample data)
 
-Backend (`fastapi_service`) — dettagli
+Backend (`fastapi_service`) — details
 ------------------------------------
 
-- Architettura: API REST costruita con FastAPI; routing organizzato in `routers/`.
-- Scopi tipici degli endpoint: gestione `operators`, `zones`, `activities`, `users`, e `favorites`.
-- Documentazione API automatica: FastAPI espone `http://<host>:<port>/docs` (Swagger UI) e `/redoc`.
-- Connessione al database: controlla `fastapi_service/app/database.py` e gli script in `database/` per inizializzare i dati.
+- Architecture: REST API built with FastAPI; routes organized in `routers/`.
+- Typical endpoints: manage `operators`, `zones`, `activities`, `users`, and `favorites`.
+- Built-in API docs available at `http://<host>:<port>/docs` (Swagger UI) and `/redoc`.
+- Database connection: see `fastapi_service/app/database.py` and the scripts in `database/` to initialize or seed data.
 
-Esempio: avviare il backend in ambiente di sviluppo
+Quick start — backend (development)
 
 ```bash
 python -m venv .venv
@@ -48,19 +48,19 @@ pip install -r fastapi_service/requirements.txt
 uvicorn fastapi_service.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Note sul database
------------------
+Database notes
+--------------
 
-- Se vuoi ripristinare il database locale, usa gli script in `database/scripts/` o importa il file `.bacpac` con gli strumenti appropriati per il tuo DB (es. Azure, SQL Server Management Studio). Nel repository trovi script per creare tabelle e popolare dati di esempio.
-- Controlla e configura la stringa di connessione (es. `DATABASE_URL`) nelle variabili d'ambiente o nel file di configurazione usato dal backend.
+- To restore a local database, run the SQL scripts in `database/scripts/` or import the `.bacpac` file using your database tooling (for example Azure or SQL Server tools). The repository includes scripts to create schema and load sample data.
+- Configure the connection string (e.g. `DATABASE_URL`) via environment variables or the config used by the backend.
 
-Client Flutter (`flutter_application`) — dettagli
------------------------------------------------
+Flutter client (`flutter_application`) — details
+---------------------------------------------
 
-- Scopo: interfaccia utente multi-piattaforma per esplorare operatori, vedere mappe e dettagli, gestire preferiti e inviare richieste di contatto.
-- Principalmente struttura sotto `flutter_application/lib/` (pagine, widget, servizi, providers).
+- Purpose: cross-platform UI to explore operators, view maps and details, manage favorites, and send contact requests.
+- Main code is under `flutter_application/lib/` (pages, widgets, services, providers).
 
-Esempio: avviare il client in locale
+Quick start — client (development)
 
 ```bash
 cd flutter_application
@@ -68,29 +68,29 @@ flutter pub get
 flutter run
 ```
 
-Suggerimenti per lo sviluppo
----------------------------
+Development tips
+----------------
 
 - Backend
-	- Usa un ambiente virtuale Python e tieni aggiornate le dipendenze in `requirements.txt`.
-	- FastAPI fornisce endpoint interattivi per testare le API; utile per sviluppo frontend.
+  - Use a Python virtual environment and keep `requirements.txt` up to date.
+  - FastAPI interactive docs are useful during frontend development and testing.
 
 - Frontend
-	- Assicurati di avere `flutter` installato e configurato per le piattaforme target.
-	- Esegui `flutter analyze` e `flutter test` quando disponibili.
+  - Ensure `flutter` is installed and configured for your target platforms.
+  - Run `flutter analyze` and `flutter test` where available.
 
-Contribuire
------------
+Contributing
+------------
 
-- Apri issue per bug o richieste di funzionalità.
-- Fai fork e PR con descrizione chiara delle modifiche e istruzioni per testare.
+- Open issues for bugs or feature requests.
+- Fork and submit PRs with clear descriptions and testing instructions.
 
-Ulteriori note
---------------
+Further notes
+-------------
 
-- Aggiorna questo `README` se vengono aggiunti script di deployment, container Docker, CI/CD o requisiti specifici (versione Python, versione Flutter, ecc.).
+- Update this `README` if you add deployment scripts, Dockerfiles, CI/CD, or specific runtime requirements (Python version, Flutter version, etc.).
 
-Licenza
+License
 -------
 
-Indicare qui la licenza del progetto (se applicabile). Se non sei sicuro, aggiungi una `LICENSE` quando decidi il tipo di licenza.
+Specify the project license here (if applicable). If undecided, add a `LICENSE` file when you choose a license.
